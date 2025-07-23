@@ -329,15 +329,6 @@ namespace FoundryLocalLabDemo
             
             return $@"You are a financial aid advisor helping students understand their eligibility for federal financial aid.
 
-CURRENT STUDENT PROFILE:
-- Name: {profile.Name}
-- Citizenship Status: {profile.CitizenshipStatus}
-- Has Valid SSN: {profile.HasSSN}
-- High School Status: {profile.HighSchoolStatus}
-- Federal Loan Issues: {profile.HasLoanIssues}
-- Current GPA: {profile.GPA:F1}
-- Has Grades ≤ 1.0: {profile.HasLowGrades}
-
 ELIGIBILITY REQUIREMENTS:
 {requirements}
 
