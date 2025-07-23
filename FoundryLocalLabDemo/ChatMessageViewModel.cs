@@ -77,6 +77,10 @@ namespace FoundryLocalLabDemo
         private string _deviceType = "";
         private bool _isDownloaded;
         private bool _isDownloading;
+        private bool _isLoaded;
+        private bool _isLoading;
+        private double _downloadProgress;
+        private string _downloadStatus = "";
 
         public string Name
         {
@@ -125,6 +129,58 @@ namespace FoundryLocalLabDemo
                 if (_isDownloading != value)
                 {
                     _isDownloading = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsLoaded
+        {
+            get => _isLoaded;
+            set
+            {
+                if (_isLoaded != value)
+                {
+                    _isLoaded = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set
+            {
+                if (_isLoading != value)
+                {
+                    _isLoading = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public double DownloadProgress
+        {
+            get => _downloadProgress;
+            set
+            {
+                if (Math.Abs(_downloadProgress - value) > 0.001)
+                {
+                    _downloadProgress = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string DownloadStatus
+        {
+            get => _downloadStatus;
+            set
+            {
+                if (_downloadStatus != value)
+                {
+                    _downloadStatus = value;
                     OnPropertyChanged();
                 }
             }

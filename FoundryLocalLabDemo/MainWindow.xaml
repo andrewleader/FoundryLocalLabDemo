@@ -140,11 +140,17 @@
                                         <Border.Style>
                                             <Style TargetType="Border">
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsDownloaded}" Value="True">
+                                                    <DataTrigger Binding="{Binding IsLoaded}" Value="True">
                                                         <Setter Property="Background" Value="LightGreen"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsDownloaded}" Value="True">
+                                                        <Setter Property="Background" Value="LightBlue"/>
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding IsDownloading}" Value="True">
                                                         <Setter Property="Background" Value="LightYellow"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                                        <Setter Property="Background" Value="LightCyan"/>
                                                     </DataTrigger>
                                                     <Trigger Property="IsMouseOver" Value="True">
                                                         <Setter Property="BorderBrush" Value="DodgerBlue"/>
@@ -167,42 +173,65 @@
                                                            FontSize="10" 
                                                            Foreground="Gray"
                                                            TextWrapping="Wrap"/>
+                                                
+                                                <!-- Status Display -->
                                                 <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                                                    <TextBlock Text="●" 
-                                                               Foreground="Green" 
-                                                               FontSize="8"
-                                                               VerticalAlignment="Center"
-                                                               Margin="0,0,5,0">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
+                                                    <!-- Ready/Loaded State -->
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <StackPanel.Style>
+                                                            <Style TargetType="StackPanel">
                                                                 <Setter Property="Visibility" Value="Collapsed"/>
                                                                 <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsDownloaded}" Value="True">
+                                                                    <DataTrigger Binding="{Binding IsLoaded}" Value="True">
                                                                         <Setter Property="Visibility" Value="Visible"/>
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
-                                                        </TextBlock.Style>
-                                                    </TextBlock>
-                                                    <TextBlock Text="Downloaded" 
-                                                               FontSize="10" 
-                                                               Foreground="Green">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
+                                                        </StackPanel.Style>
+                                                        <TextBlock Text="●" Foreground="Green" FontSize="8" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                        <TextBlock Text="Ready" FontSize="10" Foreground="Green"/>
+                                                    </StackPanel>
+                                                    
+                                                    <!-- Downloaded but not loaded -->
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <StackPanel.Style>
+                                                            <Style TargetType="StackPanel">
                                                                 <Setter Property="Visibility" Value="Collapsed"/>
                                                                 <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsDownloaded}" Value="True">
+                                                                    <MultiDataTrigger>
+                                                                        <MultiDataTrigger.Conditions>
+                                                                            <Condition Binding="{Binding IsDownloaded}" Value="True"/>
+                                                                            <Condition Binding="{Binding IsLoaded}" Value="False"/>
+                                                                            <Condition Binding="{Binding IsLoading}" Value="False"/>
+                                                                        </MultiDataTrigger.Conditions>
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </MultiDataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </StackPanel.Style>
+                                                        <TextBlock Text="●" Foreground="Blue" FontSize="8" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                        <TextBlock Text="Click to load" FontSize="10" Foreground="Blue"/>
+                                                    </StackPanel>
+                                                
+                                                    <!-- Loading into memory -->
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <StackPanel.Style>
+                                                            <Style TargetType="StackPanel">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsLoading}" Value="True">
                                                                         <Setter Property="Visibility" Value="Visible"/>
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
-                                                        </TextBlock.Style>
-                                                    </TextBlock>
-                                                    <TextBlock Text="Downloading..." 
-                                                               FontSize="10" 
-                                                               Foreground="Orange">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
+                                                        </StackPanel.Style>
+                                                        <TextBlock Text="Loading..." FontSize="10" Foreground="Cyan"/>
+                                                    </StackPanel>
+                                                
+                                                    <!-- Downloading -->
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <StackPanel.Style>
+                                                            <Style TargetType="StackPanel">
                                                                 <Setter Property="Visibility" Value="Collapsed"/>
                                                                 <Style.Triggers>
                                                                     <DataTrigger Binding="{Binding IsDownloading}" Value="True">
@@ -210,13 +239,14 @@
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
-                                                        </TextBlock.Style>
-                                                    </TextBlock>
-                                                    <TextBlock Text="Click to download" 
-                                                               FontSize="10" 
-                                                               Foreground="Blue">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
+                                                        </StackPanel.Style>
+                                                        <TextBlock Text="{Binding DownloadStatus}" FontSize="10" Foreground="Orange"/>
+                                                    </StackPanel>
+                                                
+                                                    <!-- Not downloaded -->
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <StackPanel.Style>
+                                                            <Style TargetType="StackPanel">
                                                                 <Setter Property="Visibility" Value="Visible"/>
                                                                 <Style.Triggers>
                                                                     <DataTrigger Binding="{Binding IsDownloaded}" Value="True">
@@ -227,9 +257,26 @@
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
-                                                        </TextBlock.Style>
-                                                    </TextBlock>
+                                                        </StackPanel.Style>
+                                                        <TextBlock Text="Click to download" FontSize="10" Foreground="Blue"/>
+                                                    </StackPanel>
                                                 </StackPanel>
+                                                
+                                                <!-- Download Progress Bar -->
+                                                <ProgressBar Height="4" Margin="0,2,0,0" 
+                                                           Value="{Binding DownloadProgress}" 
+                                                           Maximum="100">
+                                                    <ProgressBar.Style>
+                                                        <Style TargetType="ProgressBar">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsDownloading}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </ProgressBar.Style>
+                                                </ProgressBar>
                                             </StackPanel>
                                             
                                             <RadioButton Grid.Column="1" 

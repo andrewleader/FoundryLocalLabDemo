@@ -145,7 +145,11 @@ namespace FoundryLocalLabDemo
                         Name = model.ModelId,
                         DeviceType = model.Runtime.DeviceType.ToString(),
                         IsDownloaded = cachedModelNames.Contains(model.ModelId),
-                        IsDownloading = false
+                        IsDownloading = false,
+                        IsLoaded = false, // Models need to be loaded into memory after download
+                        IsLoading = false,
+                        DownloadProgress = 0,
+                        DownloadStatus = ""
                     };
                     AvailableModels.Add(modelViewModel);
                 }
@@ -154,7 +158,8 @@ namespace FoundryLocalLabDemo
                 var firstDownloadedModel = AvailableModels.FirstOrDefault(m => m.IsDownloaded);
                 if (firstDownloadedModel != null)
                 {
-                    SelectedModelName = firstDownloadedModel.Name;
+                    // Load the first downloaded model into memory and select it
+                    await LoadModelIntoMemory(firstDownloadedModel);
                 }
             }
             catch (Exception ex)
@@ -165,8 +170,10 @@ namespace FoundryLocalLabDemo
 
         private void UpdateSendButtonState()
         {
-            // Enable send button only if a model is selected and we're not currently streaming
+            // Enable send button only if a model is selected, loaded, and we're not currently streaming
+            var selectedModel = AvailableModels.FirstOrDefault(m => m.Name == SelectedModelName);
             SendButton.IsEnabled = !string.IsNullOrEmpty(SelectedModelName) && 
+                                  selectedModel?.IsLoaded == true &&
                                   (_currentCancellationTokenSource == null || _currentCancellationTokenSource.Token.IsCancellationRequested);
         }
 
@@ -182,8 +189,21 @@ namespace FoundryLocalLabDemo
                 var selectedModel = AvailableModels.FirstOrDefault(m => m.Name == SelectedModelName);
                 if (selectedModel != null)
                 {
-                    SelectedModelText.Text = $"Selected: {selectedModel.Name} ({selectedModel.DeviceType})";
-                    SelectedModelText.Foreground = new SolidColorBrush(Colors.Green);
+                    if (selectedModel.IsLoaded)
+                    {
+                        SelectedModelText.Text = $"Selected: {selectedModel.Name} ({selectedModel.DeviceType}) - Ready";
+                        SelectedModelText.Foreground = new SolidColorBrush(Colors.Green);
+                    }
+                    else if (selectedModel.IsDownloaded)
+                    {
+                        SelectedModelText.Text = $"Selected: {selectedModel.Name} ({selectedModel.DeviceType}) - Downloaded";
+                        SelectedModelText.Foreground = new SolidColorBrush(Colors.Blue);
+                    }
+                    else
+                    {
+                        SelectedModelText.Text = $"Selected: {selectedModel.Name} ({selectedModel.DeviceType}) - Not Downloaded";
+                        SelectedModelText.Foreground = new SolidColorBrush(Colors.Orange);
+                    }
                 }
             }
         }
@@ -273,6 +293,30 @@ namespace FoundryLocalLabDemo
             }
         }
 
+        private async Task LoadModelIntoMemory(ModelViewModel model)
+        {
+            if (!model.IsDownloaded || model.IsLoading || model.IsLoaded)
+                return;
+
+            try
+            {
+                model.IsLoading = true;
+                StatusText.Text = $"Loading model into memory: {model.Name}...";
+                
+                await ExecutionLogic.LoadModelAsync(model.Name);
+                
+                model.IsLoaded = true;
+                model.IsLoading = false;
+                SelectedModelName = model.Name;
+                StatusText.Text = $"Model loaded and ready: {model.Name}";
+            }
+            catch (Exception ex)
+            {
+                model.IsLoading = false;
+                StatusText.Text = $"Error loading model into memory: {ex.Message}";
+            }
+        }
+
         private async void ModelItem_Click(object sender, MouseButtonEventArgs e)
         {
             if (sender is Border border && border.Tag is string modelName)
@@ -280,37 +324,64 @@ namespace FoundryLocalLabDemo
                 var model = AvailableModels.FirstOrDefault(m => m.Name == modelName);
                 if (model != null)
                 {
-                    // If the model is not downloaded, download it first
+                    // Step 1: Download the model if not downloaded
                     if (!model.IsDownloaded && !model.IsDownloading)
                     {
                         try
                         {
                             model.IsDownloading = true;
+                            model.DownloadProgress = 0;
+                            model.DownloadStatus = "Starting download...";
                             StatusText.Text = $"Downloading model: {model.Name}...";
                             
-                            await ExecutionLogic.LoadModelAsync(modelName);
+                            await foreach (var progress in ExecutionLogic.DownloadModelAsync(modelName))
+                            {
+                                var progressValue = progress.Percentage;
+                                model.DownloadProgress = progressValue;
+                                model.DownloadStatus = $"Downloading... {progressValue:F1}%";
+                                StatusText.Text = $"Downloading {model.Name}: {progressValue:F1}%";
+                            }
                             
                             model.IsDownloaded = true;
                             model.IsDownloading = false;
-                            SelectedModelName = modelName;
+                            model.DownloadProgress = 100;
+                            model.DownloadStatus = "Download complete";
                             StatusText.Text = $"Model downloaded: {model.Name}";
+                            
+                            // Step 2: Automatically load into memory after download
+                            await LoadModelIntoMemory(model);
                         }
                         catch (Exception ex)
                         {
                             model.IsDownloading = false;
+                            model.DownloadProgress = 0;
+                            model.DownloadStatus = "Download failed";
                             StatusText.Text = $"Error downloading model: {ex.Message}";
                             return;
                         }
                     }
-                    else if (model.IsDownloaded)
+                    // Step 2: Load into memory if downloaded but not loaded
+                    else if (model.IsDownloaded && !model.IsLoaded && !model.IsLoading)
+                    {
+                        await LoadModelIntoMemory(model);
+                    }
+                    // Model is already loaded - just select it
+                    else if (model.IsLoaded)
                     {
                         SelectedModelName = modelName;
                         StatusText.Text = $"Selected model: {model.Name} ({model.DeviceType})";
                     }
+                    // Model is currently downloading or loading - show status
                     else
                     {
-                        // Model is currently downloading, show status
-                        StatusText.Text = $"Model is currently downloading: {model.Name}";
+                        if (model.IsDownloading)
+                        {
+                            StatusText.Text = $"Model is downloading: {model.Name} ({model.DownloadProgress:F1}%)";
+                        }
+                        else if (model.IsLoading)
+                        {
+                            StatusText.Text = $"Model is loading into memory: {model.Name}";
+                        }
                     }
                 }
             }
@@ -349,10 +420,17 @@ namespace FoundryLocalLabDemo
             string message = ChatInputTextBox.Text.Trim();
             if (string.IsNullOrEmpty(message)) return;
 
-            // Check if a model is selected
+            // Check if a model is selected and loaded
             if (string.IsNullOrEmpty(SelectedModelName))
             {
                 StatusText.Text = "Please select an AI model first";
+                return;
+            }
+
+            var selectedModel = AvailableModels.FirstOrDefault(m => m.Name == SelectedModelName);
+            if (selectedModel == null || !selectedModel.IsLoaded)
+            {
+                StatusText.Text = "Please wait for the selected model to be loaded into memory";
                 return;
             }
 
