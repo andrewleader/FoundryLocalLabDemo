@@ -67,4 +67,74 @@ namespace FoundryLocalLabDemo
             Text += additionalText;
         }
     }
+
+    /// <summary>
+    /// Represents an AI model that can be selected
+    /// </summary>
+    public class ModelViewModel : INotifyPropertyChanged
+    {
+        private string _name = "";
+        private string _deviceType = "";
+        private bool _isDownloaded;
+        private bool _isDownloading;
+
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                if (_name != value)
+                {
+                    _name = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string DeviceType
+        {
+            get => _deviceType;
+            set
+            {
+                if (_deviceType != value)
+                {
+                    _deviceType = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsDownloaded
+        {
+            get => _isDownloaded;
+            set
+            {
+                if (_isDownloaded != value)
+                {
+                    _isDownloaded = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsDownloading
+        {
+            get => _isDownloading;
+            set
+            {
+                if (_isDownloading != value)
+                {
+                    _isDownloading = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
 }

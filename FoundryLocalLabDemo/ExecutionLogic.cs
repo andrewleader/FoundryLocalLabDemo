@@ -14,26 +14,35 @@ namespace FoundryLocalLabDemo
 {
     public static class ExecutionLogic
     {
-        private const string ModelName = "deepseek-r1-distill-qwen-7b-qnn-npu";
-        private static FoundryLocalManager? manager;
-        public static async Task StartModelAsync()
+        private static FoundryLocalManager manager = new FoundryLocalManager();
+
+        public static async Task StartServiceAsync()
         {
-            manager = await FoundryLocalManager.StartModelAsync(ModelName);
+            await manager.StartServiceAsync();
         }
 
-        public static IAsyncEnumerable<ChatResponseUpdate> GenerateBotResponseAsync(List<ChatMessage> chatMessages, StudentProfile profile, CancellationToken cancellationToken)
+        public static Task<List<ModelInfo>> ListCatalogModelsAsync()
         {
-            if (manager == null)
-            {
-                throw new InvalidOperationException("Model is not started.");
-            }
+            return manager.ListCatalogModelsAsync();
 
+        public static Task<List<ModelInfo>> ListCachedModelsAsync()
+        {
+            return manager.ListCachedModelsAsync();
+        }
+
+        public static Task LoadModelAsync(string modelName)
+        {
+            return manager.LoadModelAsync(modelName);
+        }
+
+        public static IAsyncEnumerable<ChatResponseUpdate> GenerateBotResponseAsync(string modelName, List<ChatMessage> chatMessages, StudentProfile profile, CancellationToken cancellationToken)
+        {
             var chatClient = new ChatClientBuilder(
                     new OpenAIClient(new ApiKeyCredential(manager.ApiKey), new OpenAIClientOptions
                     {
                         Endpoint = manager.Endpoint
                     })
-                    .GetChatClient(ModelName)
+                    .GetChatClient(modelName)
                     .AsIChatClient())
                 .Build();
 

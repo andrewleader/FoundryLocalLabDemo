@@ -5,16 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FoundryLocalLabDemo"
         mc:Ignorable="d"
-        Title="Financial Aid Eligibility Chat" Height="800" Width="1200">
+        Title="Financial Aid Eligibility Chat" Height="800" Width="1400">
     
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="1.5*"/>
+            <ColumnDefinition Width="5"/>
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
         
-        <!-- Left Panel -->
+        <!-- Left Panel: Student Information -->
         <Grid Grid.Column="0" Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"/>
@@ -50,8 +52,8 @@
                         
                         <!-- Citizenship Status -->
                         <StackPanel Orientation="Horizontal" Margin="0,5">
-                            <Label Content="Citizenship Status:" Width="150"/>
-                            <ComboBox x:Name="CitizenshipStatusComboBox" Width="200">
+                            <Label Content="Citizenship Status:" Width="120"/>
+                            <ComboBox x:Name="CitizenshipStatusComboBox" Width="160">
                                 <ComboBoxItem Content="U.S. Citizen"/>
                                 <ComboBoxItem Content="Eligible Noncitizen"/>
                                 <ComboBoxItem Content="Not Eligible"/>
@@ -60,14 +62,14 @@
                         
                         <!-- SSN -->
                         <StackPanel Orientation="Horizontal" Margin="0,5">
-                            <Label Content="Has Valid SSN:" Width="150"/>
+                            <Label Content="Has Valid SSN:" Width="120"/>
                             <CheckBox x:Name="HasSSNCheckBox" VerticalAlignment="Center"/>
                         </StackPanel>
                         
                         <!-- High School Status -->
                         <StackPanel Orientation="Horizontal" Margin="0,5">
-                            <Label Content="High School Status:" Width="150"/>
-                            <ComboBox x:Name="HighSchoolStatusComboBox" Width="200">
+                            <Label Content="High School Status:" Width="120"/>
+                            <ComboBox x:Name="HighSchoolStatusComboBox" Width="160">
                                 <ComboBoxItem Content="High School Graduate"/>
                                 <ComboBoxItem Content="GED Holder"/>
                                 <ComboBoxItem Content="Neither"/>
@@ -76,19 +78,19 @@
                         
                         <!-- Federal Loan Issues -->
                         <StackPanel Orientation="Horizontal" Margin="0,5">
-                            <Label Content="Federal Loan Issues:" Width="150"/>
+                            <Label Content="Federal Loan Issues:" Width="120"/>
                             <CheckBox x:Name="HasLoanIssuesCheckBox" Content="Has active issues" VerticalAlignment="Center"/>
                         </StackPanel>
                         
                         <!-- GPA Status -->
                         <StackPanel Orientation="Horizontal" Margin="0,5">
-                            <Label Content="Current GPA:" Width="150"/>
-                            <TextBox x:Name="GPATextBox" Width="100" Text="3.5"/>
+                            <Label Content="Current GPA:" Width="120"/>
+                            <TextBox x:Name="GPATextBox" Width="80" Text="3.5"/>
                         </StackPanel>
                         
                         <!-- Low Grades -->
                         <StackPanel Orientation="Horizontal" Margin="0,5">
-                            <Label Content="Has Grades ≤ 1.0:" Width="150"/>
+                            <Label Content="Has Grades ≤ 1.0:" Width="120"/>
                             <CheckBox x:Name="HasLowGradesCheckBox" VerticalAlignment="Center"/>
                         </StackPanel>
                     </StackPanel>
@@ -96,11 +98,142 @@
             </GroupBox>
         </Grid>
         
-        <!-- Vertical Splitter -->
+        <!-- Left Vertical Splitter -->
         <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Width="5" Background="LightGray"/>
         
-        <!-- Right Panel: Chat Interface -->
+        <!-- Middle Panel: AI Model Selection -->
         <Grid Grid.Column="2" Margin="10">
+            <GroupBox Header="AI Model Selection" Padding="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Model Selection Header -->
+                    <StackPanel Grid.Row="0" Margin="0,0,0,10">
+                        <Label Content="Available Models:" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <Button x:Name="RefreshModelsButton" 
+                                Content="Refresh Models" 
+                                Click="RefreshModelsButton_Click" 
+                                HorizontalAlignment="Stretch"
+                                Height="30"
+                                Margin="0,0,0,5"/>
+                    </StackPanel>
+                    
+                    <!-- Model List -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="ModelsItemsControl" 
+                                      ItemsSource="{Binding AvailableModels}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="2" 
+                                            Padding="8" 
+                                            CornerRadius="4"
+                                            BorderBrush="LightGray" 
+                                            BorderThickness="1"
+                                            Background="White">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsDownloaded}" Value="True">
+                                                        <Setter Property="Background" Value="LightGreen"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsDownloading}" Value="True">
+                                                        <Setter Property="Background" Value="LightYellow"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="{Binding Name}" 
+                                                           FontWeight="Bold" 
+                                                           TextWrapping="Wrap"/>
+                                                <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                                    <TextBlock Text="●" 
+                                                               Foreground="Green" 
+                                                               FontSize="8"
+                                                               VerticalAlignment="Center"
+                                                               Margin="0,0,5,0">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsLoaded}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <TextBlock Text="Loaded" 
+                                                               FontSize="10" 
+                                                               Foreground="Green">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsLoaded}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <TextBlock Text="Loading..." 
+                                                               FontSize="10" 
+                                                               Foreground="Orange">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </StackPanel>
+                                            
+                                            <RadioButton Grid.Column="1" 
+                                                         GroupName="ModelSelection"
+                                                         IsChecked="{Binding IsLoaded}"
+                                                         Click="ModelRadioButton_Click"
+                                                         Tag="{Binding Name}"
+                                                         VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    
+                    <!-- Model Status -->
+                    <StackPanel Grid.Row="2" Margin="0,10,0,0">
+                        <TextBlock x:Name="SelectedModelText" 
+                                   Text="No model selected" 
+                                   FontWeight="Bold" 
+                                   HorizontalAlignment="Center"
+                                   Foreground="Red"/>
+                    </StackPanel>
+                </Grid>
+            </GroupBox>
+        </Grid>
+        
+        <!-- Right Vertical Splitter -->
+        <GridSplitter Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Stretch" Width="5" Background="LightGray"/>
+        
+        <!-- Right Panel: Chat Interface -->
+        <Grid Grid.Column="4" Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
@@ -199,7 +332,8 @@
                         Width="80" 
                         Height="60" 
                         Click="SendButton_Click"
-                        Margin="0,0,10,0"/>
+                        Margin="0,0,10,0"
+                        IsEnabled="False"/>
                 
                 <Button x:Name="CancelButton" 
                         Grid.Column="2" 

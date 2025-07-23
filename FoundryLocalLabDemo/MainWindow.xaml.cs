@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.AI;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,7 +24,9 @@ namespace FoundryLocalLabDemo
     {
         private string _currentStudentName = "";
         private ObservableCollection<ChatMessageViewModel> _chatMessages = new();
+        private ObservableCollection<ModelViewModel> _availableModels = new();
         private CancellationTokenSource? _currentCancellationTokenSource;
+        private string? _selectedModelName;
 
         public ObservableCollection<ChatMessageViewModel> ChatMessages
         {
@@ -32,6 +35,31 @@ namespace FoundryLocalLabDemo
             {
                 _chatMessages = value;
                 OnPropertyChanged();
+            }
+        }
+
+        public ObservableCollection<ModelViewModel> AvailableModels
+        {
+            get => _availableModels;
+            set
+            {
+                _availableModels = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string? SelectedModelName
+        {
+            get => _selectedModelName;
+            set
+            {
+                if (_selectedModelName != value)
+                {
+                    _selectedModelName = value;
+                    OnPropertyChanged();
+                    UpdateSendButtonState();
+                    UpdateSelectedModelText();
+                }
             }
         }
 
@@ -79,6 +107,85 @@ namespace FoundryLocalLabDemo
             InitializeChat();
             InitializeDefaults();
             DataContext = this;
+            _ = InitializeModelsAsync();
+        }
+
+        private async Task InitializeModelsAsync()
+        {
+            try
+            {
+                StatusText.Text = "Starting AI service...";
+                await ExecutionLogic.StartServiceAsync();
+                StatusText.Text = "Loading available models...";
+                await LoadAvailableModelsAsync();
+                StatusText.Text = "Ready";
+            }
+            catch (Exception ex)
+            {
+                StatusText.Text = $"Error initializing: {ex.Message}";
+            }
+        }
+
+        private async Task LoadAvailableModelsAsync()
+        {
+            try
+            {
+                // Clear existing models
+                AvailableModels.Clear();
+
+                // Load catalog models
+                var catalogModels = await ExecutionLogic.ListCatalogModelsAsync();
+                var cachedModels = await ExecutionLogic.ListCachedModelsAsync();
+                var cachedModelNames = cachedModels.Select(m => m.ModelId).ToHashSet();
+
+                foreach (var model in catalogModels)
+                {
+                    var modelViewModel = new ModelViewModel
+                    {
+                        Name = model.ModelId,
+                        DeviceType = model.Runtime.DeviceType.ToString(),
+                        IsDownloaded = cachedModelNames.Contains(model.ModelId),
+                        IsDownloading = false
+                    };
+                    AvailableModels.Add(modelViewModel);
+                }
+
+                // Auto-select the first loaded model if any
+                var firstLoadedModel = AvailableModels.FirstOrDefault(m => m.IsDownloaded);
+                if (firstLoadedModel != null)
+                {
+                    SelectedModelName = firstLoadedModel.Name;
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusText.Text = $"Error loading models: {ex.Message}";
+            }
+        }
+
+        private void UpdateSendButtonState()
+        {
+            // Enable send button only if a model is selected and we're not currently streaming
+            SendButton.IsEnabled = !string.IsNullOrEmpty(SelectedModelName) && 
+                                  (_currentCancellationTokenSource == null || _currentCancellationTokenSource.Token.IsCancellationRequested);
+        }
+
+        private void UpdateSelectedModelText()
+        {
+            if (string.IsNullOrEmpty(SelectedModelName))
+            {
+                SelectedModelText.Text = "No model selected";
+                SelectedModelText.Foreground = new SolidColorBrush(Colors.Red);
+            }
+            else
+            {
+                var selectedModel = AvailableModels.FirstOrDefault(m => m.Name == SelectedModelName);
+                if (selectedModel != null)
+                {
+                    SelectedModelText.Text = $"Selected: {selectedModel.Name}";
+                    SelectedModelText.Foreground = new SolidColorBrush(Colors.Green);
+                }
+            }
         }
 
         private void InitializeChat()
@@ -88,7 +195,7 @@ namespace FoundryLocalLabDemo
             // Add welcome message
             ChatMessages.Add(new ChatMessageViewModel
             {
-                Text = "Welcome to the Financial Aid Eligibility Chat! Ask me any questions about financial aid requirements and eligibility.",
+                Text = "Welcome to the Financial Aid Eligibility Chat! Please select an AI model to get started, then ask me any questions about financial aid requirements and eligibility.",
                 IsUser = false,
                 IsStreaming = false
             });
@@ -147,6 +254,69 @@ namespace FoundryLocalLabDemo
             HasLowGradesCheckBox.IsChecked = student.HasLowGrades;
         }
 
+        private async void RefreshModelsButton_Click(object sender, RoutedEventArgs e)
+        {
+            RefreshModelsButton.IsEnabled = false;
+            try
+            {
+                StatusText.Text = "Refreshing models...";
+                await LoadAvailableModelsAsync();
+                StatusText.Text = "Models refreshed";
+            }
+            catch (Exception ex)
+            {
+                StatusText.Text = $"Error refreshing models: {ex.Message}";
+            }
+            finally
+            {
+                RefreshModelsButton.IsEnabled = true;
+            }
+        }
+
+        private async void ModelRadioButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is RadioButton radioButton && radioButton.Tag is string modelName)
+            {
+                var model = AvailableModels.FirstOrDefault(m => m.Name == modelName);
+                if (model != null)
+                {
+                    // If the model is not loaded, load it first
+                    if (!model.IsDownloaded && !model.IsDownloading)
+                    {
+                        try
+                        {
+                            model.IsDownloading = true;
+                            StatusText.Text = $"Loading model: {model.Name}...";
+                            
+                            await ExecutionLogic.LoadModelAsync(modelName);
+                            
+                            model.IsDownloaded = true;
+                            model.IsDownloading = false;
+                            SelectedModelName = modelName;
+                            StatusText.Text = $"Model loaded: {model.Name}";
+                        }
+                        catch (Exception ex)
+                        {
+                            model.IsDownloading = false;
+                            radioButton.IsChecked = false; // Uncheck if loading failed
+                            StatusText.Text = $"Error loading model: {ex.Message}";
+                            return;
+                        }
+                    }
+                    else if (model.IsDownloaded)
+                    {
+                        SelectedModelName = modelName;
+                        StatusText.Text = $"Selected model: {model.Name}";
+                    }
+                    else
+                    {
+                        // Model is currently loading, don't allow selection
+                        radioButton.IsChecked = false;
+                    }
+                }
+            }
+        }
+
         private void ChatInputTextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter && !Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
@@ -179,6 +349,13 @@ namespace FoundryLocalLabDemo
         {
             string message = ChatInputTextBox.Text.Trim();
             if (string.IsNullOrEmpty(message)) return;
+
+            // Check if a model is selected
+            if (string.IsNullOrEmpty(SelectedModelName))
+            {
+                StatusText.Text = "Please select an AI model first";
+                return;
+            }
 
             // Cancel any existing operation
             CancelCurrentOperation();
@@ -222,10 +399,8 @@ namespace FoundryLocalLabDemo
                 // Convert to AI chat messages
                 var chatMessages = ConvertToChatMessages();
 
-                await ExecutionLogic.StartModelAsync();
-
                 // Generate and stream bot response with cancellation support
-                var responseStream = ExecutionLogic.GenerateBotResponseAsync(chatMessages, GetCurrentProfile(), cancellationToken);
+                var responseStream = ExecutionLogic.GenerateBotResponseAsync(SelectedModelName, chatMessages, GetCurrentProfile(), cancellationToken);
                 
                 await foreach (var update in responseStream.WithCancellation(cancellationToken))
                 {
@@ -284,7 +459,7 @@ namespace FoundryLocalLabDemo
                 // Reset UI state
                 await Dispatcher.InvokeAsync(() =>
                 {
-                    SendButton.IsEnabled = true;
+                    UpdateSendButtonState(); // Use the centralized method
                     CancelButton.Visibility = Visibility.Collapsed;
                     if (StatusText.Text == "Generating response..." || StatusText.Text == "Cancelling...")
                     {
@@ -328,6 +503,15 @@ namespace FoundryLocalLabDemo
             var requirements = EligibilityRequirementsTextBox.Text;
             
             return $@"You are a financial aid advisor helping students understand their eligibility for federal financial aid.
+
+CURRENT STUDENT PROFILE:
+- Name: {profile.Name}
+- Citizenship Status: {profile.CitizenshipStatus}
+- Has Valid SSN: {profile.HasSSN}
+- High School Status: {profile.HighSchoolStatus}
+- Federal Loan Issues: {profile.HasLoanIssues}
+- Current GPA: {profile.GPA:F1}
+- Has Grades ≤ 1.0: {profile.HasLowGrades}
 
 ELIGIBILITY REQUIREMENTS:
 {requirements}
