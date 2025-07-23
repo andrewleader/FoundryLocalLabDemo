@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36301.6 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoundryLocalLabDemo", "FoundryLocalLabDemo\FoundryLocalLabDemo.csproj", "{5CD6C22C-CC7F-42EC-99BB-06B21165BDDE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5CD6C22C-CC7F-42EC-99BB-06B21165BDDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CD6C22C-CC7F-42EC-99BB-06B21165BDDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CD6C22C-CC7F-42EC-99BB-06B21165BDDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CD6C22C-CC7F-42EC-99BB-06B21165BDDE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BECE79FD-7E3E-4C6E-B611-C81998D7DCE4}
+	EndGlobalSection
+EndGlobal

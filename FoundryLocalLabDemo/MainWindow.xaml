@@ -1,0 +1,156 @@
+﻿<Window x:Class="FoundryLocalLabDemo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FoundryLocalLabDemo"
+        mc:Ignorable="d"
+        Title="Financial Aid Eligibility Chat" Height="800" Width="1200">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="3*"/>
+        </Grid.ColumnDefinitions>
+        
+        <!-- Left Panel -->
+        <Grid Grid.Column="0" Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Upper Left: Eligibility Requirements -->
+            <GroupBox Grid.Row="0" Header="Eligibility Requirements" Padding="10">
+                <TextBox x:Name="EligibilityRequirementsTextBox" 
+                         TextWrapping="Wrap" 
+                         AcceptsReturn="True" 
+                         VerticalScrollBarVisibility="Auto"
+                         Text="Financial Aid Eligibility Requirements:&#x0a;&#x0a;• Must be a U.S. citizen or eligible noncitizen&#x0a;• Must have a valid Social Security Number&#x0a;• Must have a high school diploma or GED&#x0a;• Must not be in default on federal student loans&#x0a;• Must maintain satisfactory academic progress (SAP)&#x0a;• GPA must be above 2.0&#x0a;• Must not have any classes with 1.0 or lower&#x0a;• Must not owe refund on federal grants&#x0a;• Must be enrolled in an eligible program&#x0a;• Must not have drug-related convictions affecting eligibility"/>
+            </GroupBox>
+            
+            <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="5" Background="LightGray"/>
+            
+            <!-- Lower Left: Student Information -->
+            <GroupBox Grid.Row="2" Header="Student Information" Padding="10">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <!-- Student Selector -->
+                        <Label Content="Select Student:" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="StudentSelector" Margin="0,0,0,10" SelectionChanged="StudentSelector_SelectionChanged">
+                            <ComboBoxItem Content="Sarah Johnson - Pre-Med Student" Tag="sarah"/>
+                            <ComboBoxItem Content="Mike Rodriguez - Engineering Student" Tag="mike"/>
+                            <ComboBoxItem Content="Ashley Chen - Business Student" Tag="ashley"/>
+                        </ComboBox>
+                        
+                        <!-- Student Profile Information -->
+                        <Label Content="Student Profile:" FontWeight="Bold" Margin="0,10,0,5"/>
+                        
+                        <!-- Citizenship Status -->
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <Label Content="Citizenship Status:" Width="150"/>
+                            <ComboBox x:Name="CitizenshipStatusComboBox" Width="200">
+                                <ComboBoxItem Content="U.S. Citizen"/>
+                                <ComboBoxItem Content="Eligible Noncitizen"/>
+                                <ComboBoxItem Content="Not Eligible"/>
+                            </ComboBox>
+                        </StackPanel>
+                        
+                        <!-- SSN -->
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <Label Content="Has Valid SSN:" Width="150"/>
+                            <CheckBox x:Name="HasSSNCheckBox" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <!-- High School Status -->
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <Label Content="High School Status:" Width="150"/>
+                            <ComboBox x:Name="HighSchoolStatusComboBox" Width="200">
+                                <ComboBoxItem Content="High School Graduate"/>
+                                <ComboBoxItem Content="GED Holder"/>
+                                <ComboBoxItem Content="Neither"/>
+                            </ComboBox>
+                        </StackPanel>
+                        
+                        <!-- Federal Loan Issues -->
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <Label Content="Federal Loan Issues:" Width="150"/>
+                            <CheckBox x:Name="HasLoanIssuesCheckBox" Content="Has active issues" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <!-- GPA Status -->
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <Label Content="Current GPA:" Width="150"/>
+                            <TextBox x:Name="GPATextBox" Width="100" Text="3.5"/>
+                        </StackPanel>
+                        
+                        <!-- Low Grades -->
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <Label Content="Has Grades ≤ 1.0:" Width="150"/>
+                            <CheckBox x:Name="HasLowGradesCheckBox" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </GroupBox>
+        </Grid>
+        
+        <!-- Vertical Splitter -->
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Width="5" Background="LightGray"/>
+        
+        <!-- Right Panel: Chat Interface -->
+        <Grid Grid.Column="2" Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Chat History -->
+            <GroupBox Grid.Row="0" Header="Financial Aid Chat" Padding="10">
+                <ScrollViewer x:Name="ChatScrollViewer" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="ChatHistoryPanel">
+                        <!-- Chat messages will be added here programmatically -->
+                        <TextBlock Text="Welcome to the Financial Aid Eligibility Chat! Ask me any questions about financial aid requirements and eligibility." 
+                                   Margin="5" 
+                                   Padding="10" 
+                                   Background="LightBlue" 
+                                   TextWrapping="Wrap"
+                                   FontStyle="Italic"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </GroupBox>
+            
+            <!-- Chat Input -->
+            <Grid Grid.Row="1" Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBox x:Name="ChatInputTextBox" 
+                         Grid.Column="0" 
+                         Height="60" 
+                         TextWrapping="Wrap" 
+                         AcceptsReturn="True"
+                         VerticalScrollBarVisibility="Auto"
+                         KeyDown="ChatInputTextBox_KeyDown"
+                         Margin="0,0,10,0"/>
+                
+                <Button x:Name="SendButton" 
+                        Grid.Column="1" 
+                        Content="Send" 
+                        Width="80" 
+                        Height="60" 
+                        Click="SendButton_Click"/>
+            </Grid>
+            
+            <!-- Status Bar -->
+            <StatusBar Grid.Row="2" Margin="0,5,0,0">
+                <StatusBarItem>
+                    <TextBlock x:Name="StatusText" Text="Ready"/>
+                </StatusBarItem>
+            </StatusBar>
+        </Grid>
+    </Grid>
+</Window>
