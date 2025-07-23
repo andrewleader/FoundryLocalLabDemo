@@ -150,11 +150,11 @@ namespace FoundryLocalLabDemo
                     AvailableModels.Add(modelViewModel);
                 }
 
-                // Auto-select the first loaded model if any
-                var firstLoadedModel = AvailableModels.FirstOrDefault(m => m.IsDownloaded);
-                if (firstLoadedModel != null)
+                // Auto-select the first downloaded model if any
+                var firstDownloadedModel = AvailableModels.FirstOrDefault(m => m.IsDownloaded);
+                if (firstDownloadedModel != null)
                 {
-                    SelectedModelName = firstLoadedModel.Name;
+                    SelectedModelName = firstDownloadedModel.Name;
                 }
             }
             catch (Exception ex)
@@ -182,7 +182,7 @@ namespace FoundryLocalLabDemo
                 var selectedModel = AvailableModels.FirstOrDefault(m => m.Name == SelectedModelName);
                 if (selectedModel != null)
                 {
-                    SelectedModelText.Text = $"Selected: {selectedModel.Name}";
+                    SelectedModelText.Text = $"Selected: {selectedModel.Name} ({selectedModel.DeviceType})";
                     SelectedModelText.Foreground = new SolidColorBrush(Colors.Green);
                 }
             }
@@ -273,45 +273,44 @@ namespace FoundryLocalLabDemo
             }
         }
 
-        private async void ModelRadioButton_Click(object sender, RoutedEventArgs e)
+        private async void ModelItem_Click(object sender, MouseButtonEventArgs e)
         {
-            if (sender is RadioButton radioButton && radioButton.Tag is string modelName)
+            if (sender is Border border && border.Tag is string modelName)
             {
                 var model = AvailableModels.FirstOrDefault(m => m.Name == modelName);
                 if (model != null)
                 {
-                    // If the model is not loaded, load it first
+                    // If the model is not downloaded, download it first
                     if (!model.IsDownloaded && !model.IsDownloading)
                     {
                         try
                         {
                             model.IsDownloading = true;
-                            StatusText.Text = $"Loading model: {model.Name}...";
+                            StatusText.Text = $"Downloading model: {model.Name}...";
                             
                             await ExecutionLogic.LoadModelAsync(modelName);
                             
                             model.IsDownloaded = true;
                             model.IsDownloading = false;
                             SelectedModelName = modelName;
-                            StatusText.Text = $"Model loaded: {model.Name}";
+                            StatusText.Text = $"Model downloaded: {model.Name}";
                         }
                         catch (Exception ex)
                         {
                             model.IsDownloading = false;
-                            radioButton.IsChecked = false; // Uncheck if loading failed
-                            StatusText.Text = $"Error loading model: {ex.Message}";
+                            StatusText.Text = $"Error downloading model: {ex.Message}";
                             return;
                         }
                     }
                     else if (model.IsDownloaded)
                     {
                         SelectedModelName = modelName;
-                        StatusText.Text = $"Selected model: {model.Name}";
+                        StatusText.Text = $"Selected model: {model.Name} ({model.DeviceType})";
                     }
                     else
                     {
-                        // Model is currently loading, don't allow selection
-                        radioButton.IsChecked = false;
+                        // Model is currently downloading, show status
+                        StatusText.Text = $"Model is currently downloading: {model.Name}";
                     }
                 }
             }

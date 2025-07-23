@@ -133,7 +133,10 @@
                                             CornerRadius="4"
                                             BorderBrush="LightGray" 
                                             BorderThickness="1"
-                                            Background="White">
+                                            Background="White"
+                                            Cursor="Hand"
+                                            MouseLeftButtonDown="ModelItem_Click"
+                                            Tag="{Binding Name}">
                                         <Border.Style>
                                             <Style TargetType="Border">
                                                 <Style.Triggers>
@@ -143,6 +146,10 @@
                                                     <DataTrigger Binding="{Binding IsDownloading}" Value="True">
                                                         <Setter Property="Background" Value="LightYellow"/>
                                                     </DataTrigger>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="BorderBrush" Value="DodgerBlue"/>
+                                                        <Setter Property="BorderThickness" Value="2"/>
+                                                    </Trigger>
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
@@ -156,6 +163,10 @@
                                                 <TextBlock Text="{Binding Name}" 
                                                            FontWeight="Bold" 
                                                            TextWrapping="Wrap"/>
+                                                <TextBlock Text="{Binding DeviceType, StringFormat='Device: {0}'}" 
+                                                           FontSize="10" 
+                                                           Foreground="Gray"
+                                                           TextWrapping="Wrap"/>
                                                 <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
                                                     <TextBlock Text="●" 
                                                                Foreground="Green" 
@@ -166,36 +177,53 @@
                                                             <Style TargetType="TextBlock">
                                                                 <Setter Property="Visibility" Value="Collapsed"/>
                                                                 <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsLoaded}" Value="True">
+                                                                    <DataTrigger Binding="{Binding IsDownloaded}" Value="True">
                                                                         <Setter Property="Visibility" Value="Visible"/>
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
                                                         </TextBlock.Style>
                                                     </TextBlock>
-                                                    <TextBlock Text="Loaded" 
+                                                    <TextBlock Text="Downloaded" 
                                                                FontSize="10" 
                                                                Foreground="Green">
                                                         <TextBlock.Style>
                                                             <Style TargetType="TextBlock">
                                                                 <Setter Property="Visibility" Value="Collapsed"/>
                                                                 <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsLoaded}" Value="True">
+                                                                    <DataTrigger Binding="{Binding IsDownloaded}" Value="True">
                                                                         <Setter Property="Visibility" Value="Visible"/>
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
                                                         </TextBlock.Style>
                                                     </TextBlock>
-                                                    <TextBlock Text="Loading..." 
+                                                    <TextBlock Text="Downloading..." 
                                                                FontSize="10" 
                                                                Foreground="Orange">
                                                         <TextBlock.Style>
                                                             <Style TargetType="TextBlock">
                                                                 <Setter Property="Visibility" Value="Collapsed"/>
                                                                 <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                                                    <DataTrigger Binding="{Binding IsDownloading}" Value="True">
                                                                         <Setter Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <TextBlock Text="Click to download" 
+                                                               FontSize="10" 
+                                                               Foreground="Blue">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsDownloaded}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding IsDownloading}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
@@ -206,10 +234,16 @@
                                             
                                             <RadioButton Grid.Column="1" 
                                                          GroupName="ModelSelection"
-                                                         IsChecked="{Binding IsLoaded}"
-                                                         Click="ModelRadioButton_Click"
                                                          Tag="{Binding Name}"
-                                                         VerticalAlignment="Center"/>
+                                                         VerticalAlignment="Center"
+                                                         IsHitTestVisible="False">
+                                                <RadioButton.IsChecked>
+                                                    <MultiBinding Converter="{x:Static local:ModelSelectionConverter.Instance}">
+                                                        <Binding Path="Name"/>
+                                                        <Binding Path="DataContext.SelectedModelName" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                    </MultiBinding>
+                                                </RadioButton.IsChecked>
+                                            </RadioButton>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
