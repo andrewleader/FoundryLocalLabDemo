@@ -153,14 +153,6 @@ namespace FoundryLocalLabDemo
                     };
                     AvailableModels.Add(modelViewModel);
                 }
-
-                // Auto-select the first downloaded model if any
-                var firstDownloadedModel = AvailableModels.FirstOrDefault(m => m.IsDownloaded);
-                if (firstDownloadedModel != null)
-                {
-                    // Load the first downloaded model into memory and select it
-                    await LoadModelIntoMemory(firstDownloadedModel);
-                }
             }
             catch (Exception ex)
             {
