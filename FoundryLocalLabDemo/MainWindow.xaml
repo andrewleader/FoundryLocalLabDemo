@@ -30,7 +30,7 @@
                          TextWrapping="Wrap" 
                          AcceptsReturn="True" 
                          VerticalScrollBarVisibility="Auto"
-                         Text="Financial Aid Eligibility Requirements:&#x0a;&#x0a;• Must be a U.S. citizen or eligible noncitizen&#x0a;• Must have a valid Social Security Number&#x0a;• Must have a high school diploma or GED&#x0a;• Must not be in default on federal student loans&#x0a;• Must maintain satisfactory academic progress (SAP)&#x0a;• GPA must be above 2.0&#x0a;• Must not have any classes with 1.0 or lower&#x0a;• Must not owe refund on federal grants&#x0a;• Must be enrolled in an eligible program&#x0a;• Must not have drug-related convictions affecting eligibility"/>
+                         Text="Financial Aid Eligibility Requirements:&#x0a;&#x0a;• Must be a U.S. citizen or eligible noncitizen&#x0a;• Must have a valid Social Security Number&#x0a;• Must have a high school diploma or GED&#x0a;• Must not be in default on federal student loans&#x0a;• Must maintain satisfactory academic progress (SAP)&#x0a;• GPA must be 2.0 or higher&#x0a;• Must not have any classes with 1.0 or lower&#x0a;• Must not owe refund on federal grants&#x0a;• Must be enrolled in an eligible program&#x0a;• Must not have drug-related convictions affecting eligibility"/>
             </GroupBox>
             
             <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="5" Background="LightGray"/>

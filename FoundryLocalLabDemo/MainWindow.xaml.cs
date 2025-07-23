@@ -666,7 +666,7 @@ CURRENT STUDENT PROFILE:
 ELIGIBILITY REQUIREMENTS:
 {requirements}
 
-Please provide helpful, accurate advice about financial aid eligibility based on the student's profile and the requirements listed. Be supportive but honest about any issues that might affect eligibility. Offer specific guidance on next steps when appropriate.";
+Please provide helpful, accurate advice about financial aid eligibility based on the student's profile and the requirements listed. ONLY use the eligibility requirements listed here as criteria for financial aid. Be supportive but honest about any issues that might affect eligibility. Offer specific guidance on next steps when appropriate.";
         }
 
         private StudentProfile GetCurrentProfile()
