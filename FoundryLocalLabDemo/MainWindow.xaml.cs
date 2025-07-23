@@ -551,7 +551,7 @@ namespace FoundryLocalLabDemo
 
                 // Generate and stream bot response with cancellation support
                 var responseStream = ExecutionLogic.GenerateBotResponseAsync(SelectedModelName, chatMessages, GetCurrentProfile(), cancellationToken);
-                
+
                 await foreach (var update in responseStream.WithCancellation(cancellationToken))
                 {
                     // Check for cancellation before processing each update
@@ -560,20 +560,14 @@ namespace FoundryLocalLabDemo
                     // Handle different types of updates from the streaming response
                     if (update.Text != null)
                     {
-                        await Dispatcher.InvokeAsync(() =>
-                        {
-                            botMessage.AppendText(update.Text);
-                            ChatScrollViewer.ScrollToBottom();
-                        });
+                        botMessage.AppendText(update.Text);
+                        ChatScrollViewer.ScrollToBottom();
                     }
                 }
-                
+
                 // Mark streaming as complete
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    botMessage.IsStreaming = false;
-                    StatusText.Text = "Response complete";
-                });
+                botMessage.IsStreaming = false;
+                StatusText.Text = "Response complete";
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -666,7 +660,7 @@ CURRENT STUDENT PROFILE:
 ELIGIBILITY REQUIREMENTS:
 {requirements}
 
-Please provide helpful, accurate advice about financial aid eligibility based on the student's profile and the requirements listed. ONLY use the eligibility requirements listed here as criteria for financial aid. Be supportive but honest about any issues that might affect eligibility. Offer specific guidance on next steps when appropriate.";
+Please provide helpful, accurate advice about financial aid eligibility based on the student's profile and the requirements listed. ONLY use the eligibility requirements listed here as criteria for financial aid. Be supportive but honest about any issues that might affect eligibility. Offer specific guidance on next steps when appropriate. Keep your response very BRIEF and SHORT and to the point. Only respond with what's necessary to answer the question in the quickest way possible.";
         }
 
         private StudentProfile GetCurrentProfile()
