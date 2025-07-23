@@ -22,7 +22,8 @@ namespace FoundryLocalLabDemo
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private string _currentStudentName = "";
-        private ObservableCollection<ChatMessageViewModel> _chatMessages;
+        private ObservableCollection<ChatMessageViewModel> _chatMessages = new();
+        private CancellationTokenSource? _currentCancellationTokenSource;
 
         public ObservableCollection<ChatMessageViewModel> ChatMessages
         {
@@ -160,13 +161,36 @@ namespace FoundryLocalLabDemo
             _ = SendMessage();
         }
 
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            CancelCurrentOperation();
+        }
+
+        private void CancelCurrentOperation()
+        {
+            if (_currentCancellationTokenSource != null && !_currentCancellationTokenSource.Token.IsCancellationRequested)
+            {
+                _currentCancellationTokenSource.Cancel();
+                StatusText.Text = "Cancelling...";
+            }
+        }
+
         private async Task SendMessage()
         {
             string message = ChatInputTextBox.Text.Trim();
             if (string.IsNullOrEmpty(message)) return;
 
-            // Disable send button during processing
+            // Cancel any existing operation
+            CancelCurrentOperation();
+
+            // Create new cancellation token source for this operation
+            _currentCancellationTokenSource?.Dispose();
+            _currentCancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = _currentCancellationTokenSource.Token;
+
+            // Update UI state for streaming
             SendButton.IsEnabled = false;
+            CancelButton.Visibility = Visibility.Visible;
             
             // Add user message to chat
             var userMessage = new ChatMessageViewModel
@@ -200,11 +224,14 @@ namespace FoundryLocalLabDemo
 
                 await ExecutionLogic.StartModelAsync();
 
-                // Generate and stream bot response
-                var responseStream = ExecutionLogic.GenerateBotResponseAsync(chatMessages, GetCurrentProfile());
+                // Generate and stream bot response with cancellation support
+                var responseStream = ExecutionLogic.GenerateBotResponseAsync(chatMessages, GetCurrentProfile(), cancellationToken);
                 
-                await foreach (var update in responseStream)
+                await foreach (var update in responseStream.WithCancellation(cancellationToken))
                 {
+                    // Check for cancellation before processing each update
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     // Handle different types of updates from the streaming response
                     if (update.Text != null)
                     {
@@ -220,11 +247,31 @@ namespace FoundryLocalLabDemo
                 await Dispatcher.InvokeAsync(() =>
                 {
                     botMessage.IsStreaming = false;
+                    StatusText.Text = "Response complete";
+                });
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // Handle cancellation gracefully
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    if (string.IsNullOrEmpty(botMessage.Text))
+                    {
+                        // If no text was generated, remove the empty message
+                        ChatMessages.Remove(botMessage);
+                    }
+                    else
+                    {
+                        // If partial text was generated, mark it as cancelled
+                        botMessage.Text += "\n\n[Response cancelled by user]";
+                        botMessage.IsStreaming = false;
+                    }
+                    StatusText.Text = "Response cancelled";
                 });
             }
             catch (Exception ex)
             {
-                // Handle any errors during response generation
+                // Handle any other errors during response generation
                 await Dispatcher.InvokeAsync(() =>
                 {
                     botMessage.Text = $"Error: {ex.Message}";
@@ -234,12 +281,20 @@ namespace FoundryLocalLabDemo
             }
             finally
             {
-                // Reset status and re-enable send button
+                // Reset UI state
                 await Dispatcher.InvokeAsync(() =>
                 {
-                    StatusText.Text = "Ready";
                     SendButton.IsEnabled = true;
+                    CancelButton.Visibility = Visibility.Collapsed;
+                    if (StatusText.Text == "Generating response..." || StatusText.Text == "Cancelling...")
+                    {
+                        StatusText.Text = "Ready";
+                    }
                 });
+
+                // Clean up cancellation token source
+                _currentCancellationTokenSource?.Dispose();
+                _currentCancellationTokenSource = null;
             }
         }
 
@@ -315,6 +370,13 @@ Please provide helpful, accurate advice about financial aid eligibility based on
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        // Clean up cancellation token source when window is closed
+        protected override void OnClosed(EventArgs e)
+        {
+            _currentCancellationTokenSource?.Dispose();
+            base.OnClosed(e);
         }
     }
 

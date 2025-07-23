@@ -181,6 +181,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
                 <TextBox x:Name="ChatInputTextBox" 
@@ -197,7 +198,17 @@
                         Content="Send" 
                         Width="80" 
                         Height="60" 
-                        Click="SendButton_Click"/>
+                        Click="SendButton_Click"
+                        Margin="0,0,10,0"/>
+                
+                <Button x:Name="CancelButton" 
+                        Grid.Column="2" 
+                        Content="Cancel" 
+                        Width="80" 
+                        Height="60" 
+                        Click="CancelButton_Click"
+                        Visibility="Collapsed"
+                        Background="LightCoral"/>
             </Grid>
             
             <!-- Status Bar -->
