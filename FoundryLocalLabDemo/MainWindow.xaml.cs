@@ -1,4 +1,9 @@
-﻿using System.Text;
+﻿using Microsoft.Extensions.AI;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -14,8 +19,21 @@ namespace FoundryLocalLabDemo
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
+        private string _currentStudentName = "";
+        private ObservableCollection<ChatMessageViewModel> _chatMessages;
+
+        public ObservableCollection<ChatMessageViewModel> ChatMessages
+        {
+            get => _chatMessages;
+            set
+            {
+                _chatMessages = value;
+                OnPropertyChanged();
+            }
+        }
+
         // Sample student data
         private readonly Dictionary<string, StudentProfile> _students = new()
         {
@@ -57,7 +75,22 @@ namespace FoundryLocalLabDemo
         public MainWindow()
         {
             InitializeComponent();
+            InitializeChat();
             InitializeDefaults();
+            DataContext = this;
+        }
+
+        private void InitializeChat()
+        {
+            ChatMessages = new ObservableCollection<ChatMessageViewModel>();
+            
+            // Add welcome message
+            ChatMessages.Add(new ChatMessageViewModel
+            {
+                Text = "Welcome to the Financial Aid Eligibility Chat! Ask me any questions about financial aid requirements and eligibility.",
+                IsUser = false,
+                IsStreaming = false
+            });
         }
 
         private void InitializeDefaults()
@@ -84,6 +117,8 @@ namespace FoundryLocalLabDemo
 
         private void LoadStudentProfile(StudentProfile student)
         {
+            _currentStudentName = student.Name;
+
             // Set citizenship status
             for (int i = 0; i < CitizenshipStatusComboBox.Items.Count; i++)
             {
@@ -116,57 +151,143 @@ namespace FoundryLocalLabDemo
             if (e.Key == Key.Enter && !Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
             {
                 e.Handled = true;
-                SendMessage();
+                _ = SendMessage();
             }
         }
 
         private void SendButton_Click(object sender, RoutedEventArgs e)
         {
-            SendMessage();
+            _ = SendMessage();
         }
 
-        private void SendMessage()
+        private async Task SendMessage()
         {
             string message = ChatInputTextBox.Text.Trim();
             if (string.IsNullOrEmpty(message)) return;
 
+            // Disable send button during processing
+            SendButton.IsEnabled = false;
+            
             // Add user message to chat
-            AddChatMessage(message, isUser: true);
-
-            // Generate and add bot response
-            string response = GenerateBotResponse(message);
-            AddChatMessage(response, isUser: false);
+            var userMessage = new ChatMessageViewModel
+            {
+                Text = message,
+                IsUser = true,
+                IsStreaming = false
+            };
+            ChatMessages.Add(userMessage);
 
             // Clear input and update status
             ChatInputTextBox.Clear();
-            StatusText.Text = "Message sent";
+            StatusText.Text = "Generating response...";
+
+            // Create bot response message
+            var botMessage = new ChatMessageViewModel
+            {
+                Text = "",
+                IsUser = false,
+                IsStreaming = true
+            };
+            ChatMessages.Add(botMessage);
 
             // Auto-scroll to bottom
-            ChatScrollViewer.ScrollToBottom();
-        }
+            await Dispatcher.InvokeAsync(() => ChatScrollViewer.ScrollToBottom());
 
-        private void AddChatMessage(string message, bool isUser)
-        {
-            var messageBlock = new TextBlock
+            try
             {
-                Text = message,
-                Margin = new Thickness(5),
-                Padding = new Thickness(10),
-                TextWrapping = TextWrapping.Wrap,
-                Background = isUser ? new SolidColorBrush(Colors.LightGreen) : new SolidColorBrush(Colors.LightBlue),
-                HorizontalAlignment = isUser ? HorizontalAlignment.Right : HorizontalAlignment.Left,
-                MaxWidth = 400
-            };
-
-            if (!isUser)
-            {
-                messageBlock.FontWeight = FontWeights.Normal;
+                // Convert to AI chat messages
+                var chatMessages = ConvertToChatMessages();
+                
+                // Generate and stream bot response
+                var responseStream = ExecutionLogic.GenerateBotResponseAsync(chatMessages, GetCurrentProfile());
+                
+                await foreach (var update in responseStream)
+                {
+                    // Handle different types of updates from the streaming response
+                    if (update.Text != null)
+                    {
+                        await Dispatcher.InvokeAsync(() =>
+                        {
+                            botMessage.AppendText(update.Text);
+                            ChatScrollViewer.ScrollToBottom();
+                        });
+                    }
+                }
+                
+                // Mark streaming as complete
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    botMessage.IsStreaming = false;
+                });
             }
-
-            ChatHistoryPanel.Children.Add(messageBlock);
+            catch (Exception ex)
+            {
+                // Handle any errors during response generation
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    botMessage.Text = $"Error: {ex.Message}";
+                    botMessage.IsStreaming = false;
+                    StatusText.Text = $"Error: {ex.Message}";
+                });
+            }
+            finally
+            {
+                // Reset status and re-enable send button
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    StatusText.Text = "Ready";
+                    SendButton.IsEnabled = true;
+                });
+            }
         }
 
-        private string GenerateBotResponse(string userMessage)
+        private List<ChatMessage> ConvertToChatMessages()
+        {
+            var messages = new List<ChatMessage>();
+            
+            // Add system message with eligibility requirements and current student profile
+            var systemPrompt = CreateSystemPrompt();
+            messages.Add(new ChatMessage(ChatRole.System, systemPrompt));
+            
+            // Add user messages from chat history (excluding welcome message and the last bot message if it's being generated)
+            foreach (var chatMsg in ChatMessages.Where(m => m != ChatMessages.LastOrDefault() || !m.IsStreaming))
+            {
+                if (chatMsg.IsUser)
+                {
+                    messages.Add(new ChatMessage(ChatRole.User, chatMsg.Text));
+                }
+                else if (chatMsg != ChatMessages.FirstOrDefault()) // Skip welcome message
+                {
+                    messages.Add(new ChatMessage(ChatRole.Assistant, chatMsg.Text));
+                }
+            }
+            
+            return messages;
+        }
+
+        private string CreateSystemPrompt()
+        {
+            var profile = GetCurrentProfile();
+            var requirements = EligibilityRequirementsTextBox.Text;
+            
+            return $@"You are a financial aid advisor helping students understand their eligibility for federal financial aid.
+
+CURRENT STUDENT PROFILE:
+- Name: {profile.Name}
+- Citizenship Status: {profile.CitizenshipStatus}
+- Has Valid SSN: {profile.HasSSN}
+- High School Status: {profile.HighSchoolStatus}
+- Federal Loan Issues: {profile.HasLoanIssues}
+- Current GPA: {profile.GPA:F1}
+- Has Grades ≤ 1.0: {profile.HasLowGrades}
+
+ELIGIBILITY REQUIREMENTS:
+{requirements}
+
+Please provide helpful, accurate advice about financial aid eligibility based on the student's profile and the requirements listed. Be supportive but honest about any issues that might affect eligibility. Offer specific guidance on next steps when appropriate.";
+        }
+
+        private StudentProfile GetCurrentProfile()
         {
             // Get current student profile data
             bool hasSSN = HasSSNCheckBox.IsChecked ?? false;
@@ -174,32 +295,24 @@ namespace FoundryLocalLabDemo
             bool hasLowGrades = HasLowGradesCheckBox.IsChecked ?? false;
             string citizenship = ((ComboBoxItem?)CitizenshipStatusComboBox.SelectedItem)?.Content?.ToString() ?? "Unknown";
             string highSchool = ((ComboBoxItem?)HighSchoolStatusComboBox.SelectedItem)?.Content?.ToString() ?? "Unknown";
-            
-            double.TryParse(GPATextBox.Text, out double gpa);
 
-            // Simple rule-based response generation
-            var issues = new List<string>();
-            
-            if (citizenship == "Not Eligible")
-                issues.Add("citizenship status");
-            if (!hasSSN)
-                issues.Add("missing valid Social Security Number");
-            if (highSchool == "Neither")
-                issues.Add("lack of high school diploma or GED");
-            if (hasLoanIssues)
-                issues.Add("active issues with federal student loans");
-            if (hasLowGrades || gpa <= 1.0)
-                issues.Add("low academic performance (GPA ≤ 1.0 or failing grades)");
+            return new StudentProfile
+            {
+                HasSSN = hasSSN,
+                HasLoanIssues = hasLoanIssues,
+                HasLowGrades = hasLowGrades,
+                CitizenshipStatus = citizenship,
+                HighSchoolStatus = highSchool,
+                GPA = double.TryParse(GPATextBox.Text, out double gpa) ? gpa : 0.0,
+                Name = _currentStudentName
+            };
+        }
 
-            if (issues.Count == 0)
-            {
-                return "Great news! Based on your current profile, you appear to meet the basic eligibility requirements for federal financial aid. You have valid citizenship status, proper documentation, educational credentials, and are maintaining satisfactory academic progress. I recommend completing the FAFSA (Free Application for Federal Student Aid) to apply for aid. Is there anything specific about the financial aid process you'd like to know more about?";
-            }
-            else
-            {
-                string issueList = string.Join(", ", issues);
-                return $"I've identified some potential issues with your financial aid eligibility based on your current profile: {issueList}. These issues may affect your ability to receive federal financial aid. I recommend speaking with your school's financial aid office to discuss your specific situation and explore possible solutions or alternative funding options. Would you like more information about any of these requirements?";
-            }
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 

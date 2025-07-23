@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:FoundryLocalLabDemo"
         mc:Ignorable="d"
         Title="Financial Aid Eligibility Chat" Height="800" Width="1200">
+    
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
@@ -109,15 +110,69 @@
             <!-- Chat History -->
             <GroupBox Grid.Row="0" Header="Financial Aid Chat" Padding="10">
                 <ScrollViewer x:Name="ChatScrollViewer" VerticalScrollBarVisibility="Auto">
-                    <StackPanel x:Name="ChatHistoryPanel">
-                        <!-- Chat messages will be added here programmatically -->
-                        <TextBlock Text="Welcome to the Financial Aid Eligibility Chat! Ask me any questions about financial aid requirements and eligibility." 
-                                   Margin="5" 
-                                   Padding="10" 
-                                   Background="LightBlue" 
-                                   TextWrapping="Wrap"
-                                   FontStyle="Italic"/>
-                    </StackPanel>
+                    <ItemsControl x:Name="ChatMessagesItemsControl" 
+                                  ItemsSource="{Binding ChatMessages}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="5" 
+                                        Padding="10" 
+                                        CornerRadius="8"
+                                        MaxWidth="400">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="LightBlue"/>
+                                            <Setter Property="HorizontalAlignment" Value="Left"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsUser}" Value="True">
+                                                    <Setter Property="Background" Value="LightGreen"/>
+                                                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Text}" 
+                                                   TextWrapping="Wrap"/>
+                                        <TextBlock Text="●" 
+                                                   Foreground="Gray" 
+                                                   FontSize="8"
+                                                   HorizontalAlignment="Right"
+                                                   Margin="0,2,0,0">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsStreaming}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                            <TextBlock.RenderTransform>
+                                                <RotateTransform x:Name="StreamingIndicator" CenterX="4" CenterY="4"/>
+                                            </TextBlock.RenderTransform>
+                                            <TextBlock.Triggers>
+                                                <EventTrigger RoutedEvent="Loaded">
+                                                    <BeginStoryboard>
+                                                        <Storyboard RepeatBehavior="Forever">
+                                                            <DoubleAnimation Storyboard.TargetName="StreamingIndicator"
+                                                                           Storyboard.TargetProperty="Angle"
+                                                                           From="0" To="360" Duration="0:0:1"/>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </EventTrigger>
+                                            </TextBlock.Triggers>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
                 </ScrollViewer>
             </GroupBox>
             
