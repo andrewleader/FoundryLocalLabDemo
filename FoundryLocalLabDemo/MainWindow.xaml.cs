@@ -55,10 +55,17 @@ namespace FoundryLocalLabDemo
             {
                 if (_selectedModelName != value)
                 {
+                    string? previousModel = _selectedModelName;
                     _selectedModelName = value;
                     OnPropertyChanged();
                     UpdateSendButtonState();
                     UpdateSelectedModelText();
+                    
+                    // Reset chat when model changes (but not on initial load)
+                    if (!string.IsNullOrEmpty(previousModel) && !string.IsNullOrEmpty(value))
+                    {
+                        ResetChat();
+                    }
                 }
             }
         }
@@ -234,9 +241,18 @@ namespace FoundryLocalLabDemo
                 string studentKey = selectedItem.Tag.ToString()!;
                 if (_students.TryGetValue(studentKey, out StudentProfile? student))
                 {
+                    string previousStudentName = _currentStudentName;
                     LoadStudentProfile(student);
                     ChatInputTextBox.Text = student.DefaultQuestion;
                     StatusText.Text = $"Loaded profile for {student.Name}";
+                    
+                    // Reset chat when student changes (but not on initial load)
+                    if (!string.IsNullOrEmpty(previousStudentName) && previousStudentName != student.Name)
+                    {
+                        ResetChat();
+                        // Set the default question after reset
+                        ChatInputTextBox.Text = student.DefaultQuestion;
+                    }
                 }
             }
         }
@@ -613,6 +629,52 @@ Please provide helpful, accurate advice about financial aid eligibility based on
                 GPA = double.TryParse(GPATextBox.Text, out double gpa) ? gpa : 0.0,
                 Name = _currentStudentName
             };
+        }
+
+        private void ResetChat()
+        {
+            // Cancel any ongoing operation first
+            CancelCurrentOperation();
+            
+            // Clear all messages and reinitialize with welcome message
+            ChatMessages.Clear();
+            
+            // Add updated welcome message based on current context
+            var welcomeText = "Welcome to the Financial Aid Eligibility Chat! ";
+            
+            if (!string.IsNullOrEmpty(_currentStudentName))
+            {
+                welcomeText += $"You are now chatting as {_currentStudentName}. ";
+            }
+            
+            if (!string.IsNullOrEmpty(SelectedModelName))
+            {
+                var selectedModel = AvailableModels.FirstOrDefault(m => m.Name == SelectedModelName);
+                if (selectedModel?.IsLoaded == true)
+                {
+                    welcomeText += $"Using AI model: {selectedModel.Name} ({selectedModel.DeviceType}). ";
+                }
+            }
+            
+            welcomeText += "Ask me any questions about financial aid requirements and eligibility.";
+            
+            ChatMessages.Add(new ChatMessageViewModel
+            {
+                Text = welcomeText,
+                IsUser = false,
+                IsStreaming = false
+            });
+            
+            // Clear input box
+            ChatInputTextBox.Clear();
+            
+            // Update status
+            StatusText.Text = "Chat reset - Ready for new conversation";
+        }
+
+        private void ResetChatButton_Click(object sender, RoutedEventArgs e)
+        {
+            ResetChat();
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

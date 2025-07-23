@@ -396,6 +396,7 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
                 <TextBox x:Name="ChatInputTextBox" 
@@ -423,7 +424,17 @@
                         Height="60" 
                         Click="CancelButton_Click"
                         Visibility="Collapsed"
-                        Background="LightCoral"/>
+                        Background="LightCoral"
+                        Margin="0,0,10,0"/>
+                
+                <Button x:Name="ResetChatButton" 
+                        Grid.Column="3" 
+                        Content="Reset Chat" 
+                        Width="80" 
+                        Height="60" 
+                        Click="ResetChatButton_Click"
+                        Background="LightSteelBlue"
+                        ToolTip="Clear chat history and start fresh"/>
             </Grid>
             
             <!-- Status Bar -->
