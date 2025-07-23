@@ -164,9 +164,15 @@ namespace FoundryLocalLabDemo
         {
             // Enable send button only if a model is selected, loaded, and we're not currently streaming
             var selectedModel = AvailableModels.FirstOrDefault(m => m.Name == SelectedModelName);
-            SendButton.IsEnabled = !string.IsNullOrEmpty(SelectedModelName) && 
-                                  selectedModel?.IsLoaded == true &&
-                                  (_currentCancellationTokenSource == null || _currentCancellationTokenSource.Token.IsCancellationRequested);
+            
+            // Check if we have a valid model that's loaded
+            bool hasValidModel = !string.IsNullOrEmpty(SelectedModelName) && selectedModel?.IsLoaded == true;
+            
+            // Check if we're currently in an active operation (not cancelled and not null)
+            bool isActiveOperation = _currentCancellationTokenSource != null && 
+                                    !_currentCancellationTokenSource.Token.IsCancellationRequested;
+            
+            SendButton.IsEnabled = hasValidModel && !isActiveOperation;
         }
 
         private void UpdateSelectedModelText()
@@ -525,7 +531,11 @@ namespace FoundryLocalLabDemo
             }
             finally
             {
-                // Reset UI state
+                // Clean up cancellation token source first
+                _currentCancellationTokenSource?.Dispose();
+                _currentCancellationTokenSource = null;
+                
+                // Then reset UI state
                 await Dispatcher.InvokeAsync(() =>
                 {
                     UpdateSendButtonState(); // Use the centralized method
@@ -535,10 +545,6 @@ namespace FoundryLocalLabDemo
                         StatusText.Text = "Ready";
                     }
                 });
-
-                // Clean up cancellation token source
-                _currentCancellationTokenSource?.Dispose();
-                _currentCancellationTokenSource = null;
             }
         }
 
