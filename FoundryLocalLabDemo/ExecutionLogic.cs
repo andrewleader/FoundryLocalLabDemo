@@ -24,6 +24,7 @@ namespace FoundryLocalLabDemo
         public static Task<List<ModelInfo>> ListCatalogModelsAsync()
         {
             return manager.ListCatalogModelsAsync();
+        }
 
         public static Task<List<ModelInfo>> ListCachedModelsAsync()
         {
