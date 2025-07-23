@@ -31,19 +31,24 @@ namespace FoundryLocalLabDemo
             return manager.ListCachedModelsAsync();
         }
 
-        public static Task LoadModelAsync(string modelName)
+        public static IAsyncEnumerable<ModelDownloadProgress> DownloadModelAsync(string modelId)
         {
-            return manager.LoadModelAsync(modelName);
+            return manager.DownloadModelWithProgressAsync(modelId);
         }
 
-        public static IAsyncEnumerable<ChatResponseUpdate> GenerateBotResponseAsync(string modelName, List<ChatMessage> chatMessages, StudentProfile profile, CancellationToken cancellationToken)
+        public static Task LoadModelAsync(string modelId)
+        {
+            return manager.LoadModelAsync(modelId);
+        }
+
+        public static IAsyncEnumerable<ChatResponseUpdate> GenerateBotResponseAsync(string modelId, List<ChatMessage> chatMessages, StudentProfile profile, CancellationToken cancellationToken)
         {
             var chatClient = new ChatClientBuilder(
                     new OpenAIClient(new ApiKeyCredential(manager.ApiKey), new OpenAIClientOptions
                     {
                         Endpoint = manager.Endpoint
                     })
-                    .GetChatClient(modelName)
+                    .GetChatClient(modelId)
                     .AsIChatClient())
                 .Build();
 
