@@ -25,6 +25,8 @@ namespace FoundryLocalLabDemo
         private string _currentStudentName = "";
         private ObservableCollection<ChatMessageViewModel> _chatMessages = new();
         private ObservableCollection<ModelViewModel> _availableModels = new();
+        private ObservableCollection<ModelViewModel> _downloadedModels = new();
+        private ObservableCollection<ModelViewModel> _availableForDownloadModels = new();
         private CancellationTokenSource? _currentCancellationTokenSource;
         private string? _selectedModelName;
 
@@ -44,6 +46,26 @@ namespace FoundryLocalLabDemo
             set
             {
                 _availableModels = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public ObservableCollection<ModelViewModel> DownloadedModels
+        {
+            get => _downloadedModels;
+            set
+            {
+                _downloadedModels = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public ObservableCollection<ModelViewModel> AvailableForDownloadModels
+        {
+            get => _availableForDownloadModels;
+            set
+            {
+                _availableForDownloadModels = value;
                 OnPropertyChanged();
             }
         }
@@ -139,6 +161,8 @@ namespace FoundryLocalLabDemo
             {
                 // Clear existing models
                 AvailableModels.Clear();
+                DownloadedModels.Clear();
+                AvailableForDownloadModels.Clear();
 
                 // Load catalog models
                 var catalogModels = await ExecutionLogic.ListCatalogModelsAsync();
@@ -158,7 +182,19 @@ namespace FoundryLocalLabDemo
                         DownloadProgress = 0,
                         DownloadStatus = ""
                     };
+                    
+                    // Add to main collection
                     AvailableModels.Add(modelViewModel);
+                    
+                    // Add to appropriate separated collection
+                    if (modelViewModel.IsDownloaded)
+                    {
+                        DownloadedModels.Add(modelViewModel);
+                    }
+                    else
+                    {
+                        AvailableForDownloadModels.Add(modelViewModel);
+                    }
                 }
             }
             catch (Exception ex)
@@ -215,12 +251,32 @@ namespace FoundryLocalLabDemo
 
         private void InitializeChat()
         {
-            ChatMessages = new ObservableCollection<ChatMessageViewModel>();
-            
+            if (ChatMessages == null)
+            {
+                ChatMessages = new ObservableCollection<ChatMessageViewModel>();
+            }
+            else
+            {
+                ChatMessages.Clear();
+            }
+
+            string text = "Welcome to the Financial Aid Eligibility Chat!";
+
+            if (SelectedModelName == null)
+            {
+                text += " Please select an AI model to get started, then a";
+            }
+            else
+            {
+                text += " A";
+            }
+
+            text += "sk me any questions about financial aid requirements and eligibility.";
+
             // Add welcome message
             ChatMessages.Add(new ChatMessageViewModel
             {
-                Text = "Welcome to the Financial Aid Eligibility Chat! Please select an AI model to get started, then ask me any questions about financial aid requirements and eligibility.",
+                Text = text,
                 IsUser = false,
                 IsStreaming = false
             });
@@ -361,6 +417,9 @@ namespace FoundryLocalLabDemo
                             model.DownloadProgress = 100;
                             model.DownloadStatus = "Download complete";
                             StatusText.Text = $"Model downloaded: {model.Name}";
+                            
+                            // Refresh the separated collections after download
+                            RefreshModelCollections();
                             
                             // Step 2: Automatically load into memory after download
                             await LoadModelIntoMemory(model);
@@ -635,35 +694,8 @@ Please provide helpful, accurate advice about financial aid eligibility based on
         {
             // Cancel any ongoing operation first
             CancelCurrentOperation();
-            
-            // Clear all messages and reinitialize with welcome message
-            ChatMessages.Clear();
-            
-            // Add updated welcome message based on current context
-            var welcomeText = "Welcome to the Financial Aid Eligibility Chat! ";
-            
-            if (!string.IsNullOrEmpty(_currentStudentName))
-            {
-                welcomeText += $"You are now chatting as {_currentStudentName}. ";
-            }
-            
-            if (!string.IsNullOrEmpty(SelectedModelName))
-            {
-                var selectedModel = AvailableModels.FirstOrDefault(m => m.Name == SelectedModelName);
-                if (selectedModel?.IsLoaded == true)
-                {
-                    welcomeText += $"Using AI model: {selectedModel.Name} ({selectedModel.DeviceType}). ";
-                }
-            }
-            
-            welcomeText += "Ask me any questions about financial aid requirements and eligibility.";
-            
-            ChatMessages.Add(new ChatMessageViewModel
-            {
-                Text = welcomeText,
-                IsUser = false,
-                IsStreaming = false
-            });
+
+            InitializeChat();
             
             // Clear input box
             ChatInputTextBox.Clear();
@@ -675,6 +707,26 @@ Please provide helpful, accurate advice about financial aid eligibility based on
         private void ResetChatButton_Click(object sender, RoutedEventArgs e)
         {
             ResetChat();
+        }
+
+        private void RefreshModelCollections()
+        {
+            // Clear the separated collections
+            DownloadedModels.Clear();
+            AvailableForDownloadModels.Clear();
+            
+            // Repopulate based on current state
+            foreach (var model in AvailableModels)
+            {
+                if (model.IsDownloaded)
+                {
+                    DownloadedModels.Add(model);
+                }
+                else
+                {
+                    AvailableForDownloadModels.Add(model);
+                }
+            }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

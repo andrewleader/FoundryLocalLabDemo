@@ -107,13 +107,14 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="1*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     
                     <!-- Model Selection Header -->
                     <StackPanel Grid.Row="0" Margin="0,0,0,10">
-                        <Label Content="Available Models:" FontWeight="Bold" Margin="0,0,0,5"/>
                         <Button x:Name="RefreshModelsButton" 
                                 Content="Refresh Models" 
                                 Click="RefreshModelsButton_Click" 
@@ -122,184 +123,233 @@
                                 Margin="0,0,0,5"/>
                     </StackPanel>
                     
-                    <!-- Model List -->
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl x:Name="ModelsItemsControl" 
-                                      ItemsSource="{Binding AvailableModels}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Margin="2" 
-                                            Padding="8" 
-                                            CornerRadius="4"
-                                            BorderBrush="LightGray" 
-                                            BorderThickness="1"
-                                            Background="White"
-                                            Cursor="Hand"
-                                            MouseLeftButtonDown="ModelItem_Click"
-                                            Tag="{Binding Name}">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsLoaded}" Value="True">
-                                                        <Setter Property="Background" Value="LightGreen"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding IsDownloaded}" Value="True">
-                                                        <Setter Property="Background" Value="LightBlue"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding IsDownloading}" Value="True">
-                                                        <Setter Property="Background" Value="LightYellow"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding IsLoading}" Value="True">
-                                                        <Setter Property="Background" Value="LightCyan"/>
-                                                    </DataTrigger>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="BorderBrush" Value="DodgerBlue"/>
-                                                        <Setter Property="BorderThickness" Value="2"/>
-                                                    </Trigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            
-                                            <StackPanel Grid.Column="0">
-                                                <TextBlock Text="{Binding Name}" 
-                                                           FontWeight="Bold" 
-                                                           TextWrapping="Wrap"/>
-                                                <TextBlock Text="{Binding DeviceType, StringFormat='Device: {0}'}" 
-                                                           FontSize="10" 
-                                                           Foreground="Gray"
-                                                           TextWrapping="Wrap"/>
+                    <!-- Downloaded Models Section -->
+                    <GroupBox Grid.Row="1" Header="Downloaded Models" Padding="5" Margin="0,0,0,5">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl x:Name="DownloadedModelsItemsControl" 
+                                          ItemsSource="{Binding DownloadedModels}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="2" 
+                                                Padding="6" 
+                                                CornerRadius="4"
+                                                BorderBrush="LightGray" 
+                                                BorderThickness="1"
+                                                Background="White"
+                                                Cursor="Hand"
+                                                MouseLeftButtonDown="ModelItem_Click"
+                                                Tag="{Binding Name}">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsLoaded}" Value="True">
+                                                            <Setter Property="Background" Value="LightGreen"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                                            <Setter Property="Background" Value="LightCyan"/>
+                                                        </DataTrigger>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="BorderBrush" Value="DodgerBlue"/>
+                                                            <Setter Property="BorderThickness" Value="2"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
                                                 
-                                                <!-- Status Display -->
-                                                <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                                                    <!-- Ready/Loaded State -->
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <StackPanel.Style>
-                                                            <Style TargetType="StackPanel">
-                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsLoaded}" Value="True">
-                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </StackPanel.Style>
-                                                        <TextBlock Text="●" Foreground="Green" FontSize="8" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                                        <TextBlock Text="Ready" FontSize="10" Foreground="Green"/>
-                                                    </StackPanel>
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="{Binding Name}" 
+                                                               FontWeight="Bold" 
+                                                               FontSize="11"
+                                                               TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{Binding DeviceType, StringFormat='Device: {0}'}" 
+                                                               FontSize="9" 
+                                                               Foreground="Gray"
+                                                               TextWrapping="Wrap"/>
+                                                    <!-- Status Display for Downloaded Models -->
+                                                    <StackPanel Orientation="Horizontal" Margin="0,1,0,0">
+                                                        <!-- Ready/Loaded State -->
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <StackPanel.Style>
+                                                                <Style TargetType="StackPanel">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsLoaded}" Value="True">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </StackPanel.Style>
+                                                            <TextBlock Text="●" Foreground="Green" FontSize="7" VerticalAlignment="Center" Margin="0,0,3,0"/>
+                                                            <TextBlock Text="Ready" FontSize="9" Foreground="Green"/>
+                                                        </StackPanel>
                                                     
-                                                    <!-- Downloaded but not loaded -->
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <StackPanel.Style>
-                                                            <Style TargetType="StackPanel">
-                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                                <Style.Triggers>
-                                                                    <MultiDataTrigger>
-                                                                        <MultiDataTrigger.Conditions>
-                                                                            <Condition Binding="{Binding IsDownloaded}" Value="True"/>
-                                                                            <Condition Binding="{Binding IsLoaded}" Value="False"/>
-                                                                            <Condition Binding="{Binding IsLoading}" Value="False"/>
-                                                                        </MultiDataTrigger.Conditions>
-                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                    </MultiDataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </StackPanel.Style>
-                                                        <TextBlock Text="●" Foreground="Blue" FontSize="8" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                                        <TextBlock Text="Click to load" FontSize="10" Foreground="Blue"/>
-                                                    </StackPanel>
-                                                
-                                                    <!-- Loading into memory -->
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <StackPanel.Style>
-                                                            <Style TargetType="StackPanel">
-                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsLoading}" Value="True">
-                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </StackPanel.Style>
-                                                        <TextBlock Text="Loading..." FontSize="10" Foreground="Cyan"/>
-                                                    </StackPanel>
-                                                
-                                                    <!-- Downloading -->
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <StackPanel.Style>
-                                                            <Style TargetType="StackPanel">
-                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsDownloading}" Value="True">
-                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </StackPanel.Style>
-                                                        <TextBlock Text="{Binding DownloadStatus}" FontSize="10" Foreground="Orange"/>
-                                                    </StackPanel>
-                                                
-                                                    <!-- Not downloaded -->
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <StackPanel.Style>
-                                                            <Style TargetType="StackPanel">
-                                                                <Setter Property="Visibility" Value="Visible"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsDownloaded}" Value="True">
-                                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                                    </DataTrigger>
-                                                                    <DataTrigger Binding="{Binding IsDownloading}" Value="True">
-                                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </StackPanel.Style>
-                                                        <TextBlock Text="Click to download" FontSize="10" Foreground="Blue"/>
+                                                        <!-- Loading into memory -->
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <StackPanel.Style>
+                                                                <Style TargetType="StackPanel">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </StackPanel.Style>
+                                                            <TextBlock Text="Loading..." FontSize="9" Foreground="Cyan"/>
+                                                        </StackPanel>
+                                                    
+                                                        <!-- Click to load -->
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <StackPanel.Style>
+                                                                <Style TargetType="StackPanel">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsLoaded}" Value="True">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </StackPanel.Style>
+                                                            <TextBlock Text="●" Foreground="Blue" FontSize="7" VerticalAlignment="Center" Margin="0,0,3,0"/>
+                                                            <TextBlock Text="Click to load" FontSize="9" Foreground="Blue"/>
+                                                        </StackPanel>
                                                     </StackPanel>
                                                 </StackPanel>
                                                 
-                                                <!-- Download Progress Bar -->
-                                                <ProgressBar Height="4" Margin="0,2,0,0" 
-                                                           Value="{Binding DownloadProgress}" 
-                                                           Maximum="100">
-                                                    <ProgressBar.Style>
-                                                        <Style TargetType="ProgressBar">
-                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding IsDownloading}" Value="True">
+                                                <RadioButton Grid.Column="1" 
+                                                             GroupName="ModelSelection"
+                                                             Tag="{Binding Name}"
+                                                             VerticalAlignment="Center"
+                                                             IsHitTestVisible="False">
+                                                    <RadioButton.IsChecked>
+                                                        <MultiBinding Converter="{x:Static local:ModelSelectionConverter.Instance}">
+                                                            <Binding Path="Name"/>
+                                                            <Binding Path="DataContext.SelectedModelName" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                        </MultiBinding>
+                                                    </RadioButton.IsChecked>
+                                                </RadioButton>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </GroupBox>
+                    
+                    <!-- Separator -->
+                    <GridSplitter Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="3" Background="LightGray" Margin="0,5"/>
+                    
+                    <!-- Available for Download Models Section -->
+                    <GroupBox Grid.Row="3" Header="Available for Download" Padding="5" Margin="0,5,0,0">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl x:Name="AvailableForDownloadModelsItemsControl" 
+                                          ItemsSource="{Binding AvailableForDownloadModels}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="2" 
+                                                Padding="6" 
+                                                CornerRadius="4"
+                                                BorderBrush="LightGray" 
+                                                BorderThickness="1"
+                                                Background="White"
+                                                Cursor="Hand"
+                                                MouseLeftButtonDown="ModelItem_Click"
+                                                Tag="{Binding Name}">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsDownloading}" Value="True">
+                                                            <Setter Property="Background" Value="LightYellow"/>
+                                                        </DataTrigger>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="BorderBrush" Value="DodgerBlue"/>
+                                                            <Setter Property="BorderThickness" Value="2"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="{Binding Name}" 
+                                                               FontWeight="Bold" 
+                                                               FontSize="11"
+                                                               TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{Binding DeviceType, StringFormat='Device: {0}'}" 
+                                                               FontSize="9" 
+                                                               Foreground="Gray"
+                                                               TextWrapping="Wrap"/>
+                                                    
+                                                    <!-- Status Display for Available Models -->
+                                                    <StackPanel Orientation="Horizontal" Margin="0,1,0,0">
+                                                        <!-- Downloading -->
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <StackPanel.Style>
+                                                                <Style TargetType="StackPanel">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsDownloading}" Value="True">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </StackPanel.Style>
+                                                            <TextBlock Text="{Binding DownloadStatus}" FontSize="9" Foreground="Orange"/>
+                                                        </StackPanel>
+                                                        
+                                                        <!-- Click to download -->
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <StackPanel.Style>
+                                                                <Style TargetType="StackPanel">
                                                                     <Setter Property="Visibility" Value="Visible"/>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </ProgressBar.Style>
-                                                </ProgressBar>
-                                            </StackPanel>
-                                            
-                                            <RadioButton Grid.Column="1" 
-                                                         GroupName="ModelSelection"
-                                                         Tag="{Binding Name}"
-                                                         VerticalAlignment="Center"
-                                                         IsHitTestVisible="False">
-                                                <RadioButton.IsChecked>
-                                                    <MultiBinding Converter="{x:Static local:ModelSelectionConverter.Instance}">
-                                                        <Binding Path="Name"/>
-                                                        <Binding Path="DataContext.SelectedModelName" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                                                    </MultiBinding>
-                                                </RadioButton.IsChecked>
-                                            </RadioButton>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsDownloading}" Value="True">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </StackPanel.Style>
+                                                            <TextBlock Text="Click to download" FontSize="9" Foreground="Blue"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                
+                                                    <!-- Download Progress Bar -->
+                                                    <ProgressBar Height="3" Margin="0,1,0,0" 
+                                                               Value="{Binding DownloadProgress}" 
+                                                               Maximum="100">
+                                                        <ProgressBar.Style>
+                                                            <Style TargetType="ProgressBar">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsDownloading}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </ProgressBar.Style>
+                                                    </ProgressBar>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </GroupBox>
                     
                     <!-- Model Status -->
-                    <StackPanel Grid.Row="2" Margin="0,10,0,0">
+                    <StackPanel Grid.Row="4" Margin="0,10,0,0">
                         <TextBlock x:Name="SelectedModelText" 
                                    Text="No model selected" 
                                    FontWeight="Bold" 
