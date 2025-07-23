@@ -197,7 +197,9 @@ namespace FoundryLocalLabDemo
             {
                 // Convert to AI chat messages
                 var chatMessages = ConvertToChatMessages();
-                
+
+                await ExecutionLogic.StartModelAsync();
+
                 // Generate and stream bot response
                 var responseStream = ExecutionLogic.GenerateBotResponseAsync(chatMessages, GetCurrentProfile());
                 
