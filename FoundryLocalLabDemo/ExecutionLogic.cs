@@ -51,7 +51,7 @@ namespace FoundryLocalLabDemo
             return manager.UnloadModelAsync(modelId);
         }
 
-        public static async IAsyncEnumerable<StudentProfileUpdate> ParseStudentProfileStreamingAsync(string modelId, string userMessage, CancellationToken cancellationToken)
+        public static async IAsyncEnumerable<StudentProfileUpdate> ParseStudentProfileStreamingAsync(string modelId, string userMessage, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var chatClient = new ChatClientBuilder(
                     new OpenAIClient(new ApiKeyCredential(manager.ApiKey), new OpenAIClientOptions
