@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FoundryLocalLabDemo"
         mc:Ignorable="d"
-        Title="Financial Aid Eligibility Chat" Height="800" Width="1400">
+        Title="Financial Aid Support Staff Tool" Height="800" Width="1400">
     
     <Grid>
         <Grid.ColumnDefinitions>
@@ -16,92 +16,154 @@
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
         
-        <!-- Left Panel: Student Information -->
+        <!-- Left Panel: Student Message Inbox -->
         <Grid Grid.Column="0" Margin="10">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="1*"/>
-                <RowDefinition Height="10"/>
-                <RowDefinition Height="1*"/>
-            </Grid.RowDefinitions>
-            
-            <!-- Upper Left: Eligibility Requirements -->
-            <GroupBox Grid.Row="0" Header="Eligibility Requirements" Padding="10">
-                <TextBox x:Name="EligibilityRequirementsTextBox" 
-                         TextWrapping="Wrap" 
-                         AcceptsReturn="True" 
-                         VerticalScrollBarVisibility="Auto"
-                         Text="Financial Aid Eligibility Requirements:&#x0a;&#x0a;• Must be a U.S. citizen or eligible noncitizen&#x0a;• Must have a valid Social Security Number&#x0a;• Must have a high school diploma or GED&#x0a;• Must not be in default on federal student loans&#x0a;• Must maintain satisfactory academic progress (SAP)&#x0a;• GPA must be 2.0 or higher&#x0a;• Must not have any classes with 1.0 or lower&#x0a;• Must not owe refund on federal grants&#x0a;• Must be enrolled in an eligible program&#x0a;• Must not have drug-related convictions affecting eligibility"/>
-            </GroupBox>
-            
-            <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="5" Background="LightGray"/>
-            
-            <!-- Lower Left: Student Information -->
-            <GroupBox Grid.Row="2" Header="Student Information" Padding="10">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel>
-                        <!-- Student Selector -->
-                        <Label Content="Select Student:" FontWeight="Bold" Margin="0,0,0,5"/>
-                        <ComboBox x:Name="StudentSelector" Margin="0,0,0,10" SelectionChanged="StudentSelector_SelectionChanged">
-                            <ComboBoxItem Content="Sarah Johnson - Pre-Med Student" Tag="sarah"/>
-                            <ComboBoxItem Content="Mike Rodriguez - Engineering Student" Tag="mike"/>
-                            <ComboBoxItem Content="Ashley Chen - Business Student" Tag="ashley"/>
-                        </ComboBox>
-                        
-                        <!-- Student Profile Information -->
-                        <Label Content="Student Profile:" FontWeight="Bold" Margin="0,10,0,5"/>
-                        
-                        <!-- Citizenship Status -->
-                        <StackPanel Orientation="Horizontal" Margin="0,5">
-                            <Label Content="Citizenship Status:" Width="120"/>
-                            <ComboBox x:Name="CitizenshipStatusComboBox" Width="160">
-                                <ComboBoxItem Content="U.S. Citizen"/>
-                                <ComboBoxItem Content="Eligible Noncitizen"/>
-                                <ComboBoxItem Content="Not Eligible"/>
-                            </ComboBox>
-                        </StackPanel>
-                        
-                        <!-- SSN -->
-                        <StackPanel Orientation="Horizontal" Margin="0,5">
-                            <Label Content="Has Valid SSN:" Width="120"/>
-                            <CheckBox x:Name="HasSSNCheckBox" VerticalAlignment="Center"/>
-                        </StackPanel>
-                        
-                        <!-- High School Status -->
-                        <StackPanel Orientation="Horizontal" Margin="0,5">
-                            <Label Content="High School Status:" Width="120"/>
-                            <ComboBox x:Name="HighSchoolStatusComboBox" Width="160">
-                                <ComboBoxItem Content="High School Graduate"/>
-                                <ComboBoxItem Content="GED Holder"/>
-                                <ComboBoxItem Content="Neither"/>
-                            </ComboBox>
-                        </StackPanel>
-                        
-                        <!-- Federal Loan Issues -->
-                        <StackPanel Orientation="Horizontal" Margin="0,5">
-                            <Label Content="Federal Loan Issues:" Width="120"/>
-                            <CheckBox x:Name="HasLoanIssuesCheckBox" Content="Has active issues" VerticalAlignment="Center"/>
-                        </StackPanel>
-                        
-                        <!-- GPA Status -->
-                        <StackPanel Orientation="Horizontal" Margin="0,5">
-                            <Label Content="Current GPA:" Width="120"/>
-                            <TextBox x:Name="GPATextBox" Width="80" Text="3.5"/>
-                        </StackPanel>
-                        
-                        <!-- Low Grades -->
-                        <StackPanel Orientation="Horizontal" Margin="0,5">
-                            <Label Content="Has Grades ≤ 1.0:" Width="120"/>
-                            <CheckBox x:Name="HasLowGradesCheckBox" VerticalAlignment="Center"/>
-                        </StackPanel>
+            <GroupBox Header="Student Message Inbox" Padding="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Inbox Header -->
+                    <StackPanel Grid.Row="0" Margin="0,0,0,10">
+                        <TextBlock Text="Select a message to process:" FontWeight="Bold" Margin="0,0,0,5"/>
                     </StackPanel>
-                </ScrollViewer>
+                    
+                    <!-- Message List -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="StudentMessagesItemsControl" 
+                                      ItemsSource="{Binding StudentMessages}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,0,5" 
+                                            Padding="10" 
+                                            CornerRadius="5"
+                                            BorderBrush="LightGray" 
+                                            BorderThickness="1"
+                                            Background="White"
+                                            Cursor="Hand"
+                                            MouseLeftButtonDown="MessageItem_Click">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                        <Setter Property="Background" Value="LightBlue"/>
+                                                        <Setter Property="BorderBrush" Value="DodgerBlue"/>
+                                                        <Setter Property="BorderThickness" Value="2"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsProcessing}" Value="True">
+                                                        <Setter Property="Background" Value="LightYellow"/>
+                                                        <Setter Property="BorderBrush" Value="Orange"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsUrgent}" Value="True">
+                                                        <Setter Property="BorderBrush" Value="Red"/>
+                                                        <Setter Property="BorderThickness" Value="2"/>
+                                                    </DataTrigger>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="AliceBlue"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+                                            
+                                            <!-- Header Row -->
+                                            <Grid Grid.Row="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{Binding StudentName}" 
+                                                           FontWeight="Bold" 
+                                                           FontSize="14"/>
+                                                
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                    <TextBlock Text="URGENT" 
+                                                               FontWeight="Bold" 
+                                                               Foreground="Red"
+                                                               Margin="0,0,5,0">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsUrgent}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <TextBlock Text="{Binding TimeAgo}" 
+                                                               FontSize="11" 
+                                                               Foreground="Gray"/>
+                                                </StackPanel>
+                                            </Grid>
+                                            
+                                            <!-- Student ID -->
+                                            <TextBlock Grid.Row="1" 
+                                                       Text="{Binding StudentId, StringFormat='ID: {0}'}" 
+                                                       FontSize="11" 
+                                                       Foreground="Gray" 
+                                                       Margin="0,2,0,0"/>
+                                            
+                                            <!-- Subject -->
+                                            <TextBlock Grid.Row="2" 
+                                                       Text="{Binding Subject}" 
+                                                       FontWeight="SemiBold" 
+                                                       FontSize="12"
+                                                       Margin="0,5,0,5"/>
+                                            
+                                            <!-- Message Preview -->
+                                            <TextBlock Grid.Row="3" 
+                                                       Text="{Binding MessageText}" 
+                                                       FontSize="11"
+                                                       TextWrapping="Wrap"
+                                                       MaxHeight="60"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       Foreground="DarkSlateGray"/>
+                                            
+                                            <!-- Processing Indicator -->
+                                            <Grid Grid.Row="0" Grid.RowSpan="4">
+                                                <Grid.Style>
+                                                    <Style TargetType="Grid">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsProcessing}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Grid.Style>
+                                                <Rectangle Fill="LightYellow" Opacity="0.7"/>
+                                                <TextBlock Text="Processing..." 
+                                                           HorizontalAlignment="Center" 
+                                                           VerticalAlignment="Center"
+                                                           FontWeight="Bold"
+                                                           Foreground="Orange"/>
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
             </GroupBox>
         </Grid>
         
         <!-- Left Vertical Splitter -->
         <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Width="5" Background="LightGray"/>
         
-        <!-- Middle Panel: AI Model Selection -->
+        <!-- Middle Panel: AI Model Selection (Unchanged) -->
         <Grid Grid.Column="2" Margin="10">
             <GroupBox Header="AI Model Selection" Padding="10">
                 <Grid>
@@ -170,6 +232,7 @@
                                                                FontSize="9" 
                                                                Foreground="Gray"
                                                                TextWrapping="Wrap"/>
+                                                
                                                     <!-- Status Display for Downloaded Models -->
                                                     <StackPanel Orientation="Horizontal" Margin="0,1,0,0">
                                                         <!-- Ready/Loaded State -->
@@ -363,132 +426,115 @@
         <!-- Right Vertical Splitter -->
         <GridSplitter Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Stretch" Width="5" Background="LightGray"/>
         
-        <!-- Right Panel: Chat Interface -->
+        <!-- Right Panel: Student Profile Form -->
         <Grid Grid.Column="4" Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             
-            <!-- Chat History -->
-            <GroupBox Grid.Row="0" Header="Financial Aid Chat" Padding="10">
-                <ScrollViewer x:Name="ChatScrollViewer" VerticalScrollBarVisibility="Auto">
-                    <ItemsControl x:Name="ChatMessagesItemsControl" 
-                                  ItemsSource="{Binding ChatMessages}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Margin="5" 
-                                        Padding="10" 
-                                        CornerRadius="8"
-                                        MaxWidth="400">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="Background" Value="LightBlue"/>
-                                            <Setter Property="HorizontalAlignment" Value="Left"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsUser}" Value="True">
-                                                    <Setter Property="Background" Value="LightGreen"/>
-                                                    <Setter Property="HorizontalAlignment" Value="Right"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Text}" 
-                                                   TextWrapping="Wrap"/>
-                                        <TextBlock Text="●" 
-                                                   Foreground="Gray" 
-                                                   FontSize="8"
-                                                   HorizontalAlignment="Right"
-                                                   Margin="0,2,0,0">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsStreaming}" Value="True">
-                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                            <TextBlock.RenderTransform>
-                                                <RotateTransform x:Name="StreamingIndicator" CenterX="4" CenterY="4"/>
-                                            </TextBlock.RenderTransform>
-                                            <TextBlock.Triggers>
-                                                <EventTrigger RoutedEvent="Loaded">
-                                                    <BeginStoryboard>
-                                                        <Storyboard RepeatBehavior="Forever">
-                                                            <DoubleAnimation Storyboard.TargetName="StreamingIndicator"
-                                                                           Storyboard.TargetProperty="Angle"
-                                                                           From="0" To="360" Duration="0:0:1"/>
-                                                        </Storyboard>
-                                                    </BeginStoryboard>
-                                                </EventTrigger>
-                                            </TextBlock.Triggers>
-                                        </TextBlock>
-                                    </StackPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
-                </ScrollViewer>
+            <!-- Student Profile Form -->
+            <GroupBox Grid.Row="0" Header="Student Profile" Padding="10">
+                <Grid>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+
+                            <!-- Message Preview -->
+                            <Label Content="Original Message:" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <Border BorderBrush="LightGray" BorderThickness="1" Padding="10" Background="AliceBlue">
+                                <TextBlock Text="{Binding SelectedMessage.MessageText}" 
+                                           TextWrapping="Wrap" 
+                                           MaxHeight="150"
+                                           ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                            </Border>
+                            
+                            <!-- First Name -->
+                            <StackPanel Orientation="Horizontal" Margin="0,20,0,5">
+                                <Label Content="First Name:" Width="120"/>
+                                <TextBox x:Name="FirstNameTextBox" Width="200"/>
+                            </StackPanel>
+                            
+                            <!-- Last Name -->
+                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                <Label Content="Last Name:" Width="120"/>
+                                <TextBox x:Name="LastNameTextBox" Width="200"/>
+                            </StackPanel>
+                            
+                            <!-- Citizenship Status -->
+                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                <Label Content="Citizenship Status:" Width="120"/>
+                                <ComboBox x:Name="CitizenshipStatusComboBox" Width="200">
+                                    <ComboBoxItem Content="U.S. Citizen"/>
+                                    <ComboBoxItem Content="Permanent Resident"/>
+                                    <ComboBoxItem Content="Non-Resident Alien"/>
+                                    <ComboBoxItem Content="Other"/>
+                                </ComboBox>
+                            </StackPanel>
+                            
+                            <!-- SSN -->
+                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                <Label Content="SSN:" Width="120"/>
+                                <TextBox x:Name="SSNTextBox" Width="200"/>
+                            </StackPanel>
+                            
+                            <!-- High School Status -->
+                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                <Label Content="High School Status:" Width="120"/>
+                                <ComboBox x:Name="HighSchoolStatusComboBox" Width="200">
+                                    <ComboBoxItem Content="Graduated"/>
+                                    <ComboBoxItem Content="Not Graduated"/>
+                                    <ComboBoxItem Content="GED"/>
+                                    <ComboBoxItem Content="Other"/>
+                                </ComboBox>
+                            </StackPanel>
+                            
+                            <!-- Federal Loan Issues -->
+                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                <Label Content="Federal Loan Issues:" Width="120"/>
+                                <CheckBox x:Name="HasFederalLoanIssuesCheckBox" Content="Has previous issues" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            
+                            <!-- GPA -->
+                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                <Label Content="GPA:" Width="120"/>
+                                <TextBox x:Name="GPATextBox" Width="100"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                    
+                    <!-- Processing Overlay -->
+                    <Grid>
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsProcessingProfile}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                        <Rectangle Fill="LightYellow" Opacity="0.8"/>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="Processing Profile..." 
+                                       FontWeight="Bold"
+                                       FontSize="16"
+                                       Foreground="Orange"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,10"/>
+                            <TextBlock Text="Extracting information from message..." 
+                                       x:Name="TextBlockProcessingMessageDetails"
+                                       FontSize="12"
+                                       Foreground="DarkOrange"
+                                       TextWrapping="Wrap"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
             </GroupBox>
             
-            <!-- Chat Input -->
-            <Grid Grid.Row="1" Margin="0,10,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <TextBox x:Name="ChatInputTextBox" 
-                         Grid.Column="0" 
-                         Height="60" 
-                         TextWrapping="Wrap" 
-                         AcceptsReturn="True"
-                         VerticalScrollBarVisibility="Auto"
-                         KeyDown="ChatInputTextBox_KeyDown"
-                         Margin="0,0,10,0"/>
-                
-                <Button x:Name="SendButton" 
-                        Grid.Column="1" 
-                        Content="Send" 
-                        Width="80" 
-                        Height="60" 
-                        Click="SendButton_Click"
-                        Margin="0,0,10,0"
-                        IsEnabled="False"/>
-                
-                <Button x:Name="CancelButton" 
-                        Grid.Column="2" 
-                        Content="Cancel" 
-                        Width="80" 
-                        Height="60" 
-                        Click="CancelButton_Click"
-                        Visibility="Collapsed"
-                        Background="LightCoral"
-                        Margin="0,0,10,0"/>
-                
-                <Button x:Name="ResetChatButton" 
-                        Grid.Column="3" 
-                        Content="Reset Chat" 
-                        Width="80" 
-                        Height="60" 
-                        Click="ResetChatButton_Click"
-                        Background="LightSteelBlue"
-                        ToolTip="Clear chat history and start fresh"/>
-            </Grid>
-            
             <!-- Status Bar -->
-            <StatusBar Grid.Row="2" Margin="0,5,0,0">
+            <StatusBar Grid.Row="1" Margin="0,5,0,0">
                 <StatusBarItem>
                     <TextBlock x:Name="StatusText" Text="Ready"/>
                 </StatusBarItem>
