@@ -2,8 +2,8 @@
 using Microsoft.AI.Foundry.Local;
 using Microsoft.Extensions.AI;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Schema.Generation;
 using Newtonsoft.Json.Schema;
+using Newtonsoft.Json.Schema.Generation;
 using OpenAI;
 using OpenAI.Assistants;
 using System;
@@ -11,6 +11,7 @@ using System.ClientModel;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -21,42 +22,48 @@ namespace FoundryLocalLabDemo
     {
         private static FoundryLocalManager manager = new FoundryLocalManager();
 
-        public static async Task StartServiceAsync()
+        public static Task StartServiceAsync()
         {
-            await manager.StartServiceAsync();
+            // TODO: Start the Foundry Local service
+            throw new NotImplementedException();
         }
 
         public static Task<List<ModelInfo>> ListCatalogModelsAsync()
         {
-            return manager.ListCatalogModelsAsync();
+            // TODO: Return a list of models available in the catalog
+            throw new NotImplementedException();
         }
 
         public static Task<List<ModelInfo>> ListCachedModelsAsync()
         {
-            return manager.ListCachedModelsAsync();
+            // TODO: Return a list of models that are currently cached
+            throw new NotImplementedException();
         }
 
         public static IAsyncEnumerable<ModelDownloadProgress> DownloadModelAsync(string modelId)
         {
-            return manager.DownloadModelWithProgressAsync(modelId);
+            // TODO: Download the specified model
+            throw new NotImplementedException();
         }
 
         public static Task LoadModelAsync(string modelId)
         {
-            return manager.LoadModelAsync(modelId);
+            // TODO: Load the specified model
+            throw new NotImplementedException();
         }
 
         public static Task UnloadModelAsync(string modelId)
         {
-            return manager.UnloadModelAsync(modelId);
+            // TODO: Unload the specified model
+            throw new NotImplementedException();
         }
 
         public static async IAsyncEnumerable<StudentProfileUpdate> ParseStudentProfileStreamingAsync(string modelId, string userMessage, CancellationToken cancellationToken)
         {
             var chatClient = new ChatClientBuilder(
-                    new OpenAIClient(new ApiKeyCredential(manager.ApiKey), new OpenAIClientOptions
+                    new OpenAIClient(new ApiKeyCredential("TODO"), new OpenAIClientOptions
                     {
-                        Endpoint = manager.Endpoint
+                        Endpoint = null // TODO: Replace with Foundry Local endpoint
                     })
                     .GetChatClient(modelId)
                     .AsIChatClient())
