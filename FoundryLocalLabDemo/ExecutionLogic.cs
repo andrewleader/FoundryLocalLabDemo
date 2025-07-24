@@ -89,7 +89,7 @@ namespace FoundryLocalLabDemo
                 }
             }
 
-
+            // Handle cleaning up the response to get to the JSON
             respText = respText.Trim();
             if (respText.StartsWith("<think>"))
             {
