@@ -22,19 +22,19 @@ namespace FoundryLocalLabDemo
     {
         private static FoundryLocalManager manager = new FoundryLocalManager();
 
-        public static Task StartServiceAsync()
+        public static async Task StartServiceAsync()
         {
             // TODO: Start the Foundry Local service
             throw new NotImplementedException();
         }
 
-        public static Task<List<ModelInfo>> ListCatalogModelsAsync()
+        public static async Task<List<ModelInfo>> ListCatalogModelsAsync()
         {
             // TODO: Return a list of models available in the catalog
             throw new NotImplementedException();
         }
 
-        public static Task<List<ModelInfo>> ListCachedModelsAsync()
+        public static async Task<List<ModelInfo>> ListCachedModelsAsync()
         {
             // TODO: Return a list of models that are currently cached
             throw new NotImplementedException();
@@ -46,13 +46,13 @@ namespace FoundryLocalLabDemo
             throw new NotImplementedException();
         }
 
-        public static Task LoadModelAsync(string modelId)
+        public static async Task LoadModelAsync(string modelId)
         {
             // TODO: Load the specified model
             throw new NotImplementedException();
         }
 
-        public static Task UnloadModelAsync(string modelId)
+        public static async Task UnloadModelAsync(string modelId)
         {
             // TODO: Unload the specified model
             throw new NotImplementedException();
