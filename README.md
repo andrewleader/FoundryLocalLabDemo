@@ -1,5 +1,9 @@
 # Foundry Local on Windows Lab Demo
 
+In this lab demo, we are going to be building a financial college support desk app that uses local LLMs to help pre-populate information for our support representatives.
+
+<img width="1378" height="444" alt="image" src="https://github.com/user-attachments/assets/95bfa1a2-a669-4025-ab94-07501ca7f9df" />
+
 ## Step 1: Open the solution
 
 Double click the FoundryLocalLabDemo.sln file in the root directory to open the solution.
