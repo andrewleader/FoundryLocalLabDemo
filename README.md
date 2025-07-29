@@ -4,13 +4,43 @@ In this lab demo, we are going to be building a financial college support desk a
 
 <img width="1378" height="444" alt="image" src="https://github.com/user-attachments/assets/95bfa1a2-a669-4025-ab94-07501ca7f9df" />
 
-## Step 1: Open the solution
+## Step 1: Explore Foundry Local CLI
+
+Foundry Local has both a CLI and an SDK. The CLI is great for testing how a variety of local models work on your device before starting development. The SDK enables you to use Foundry Local from your production apps.
+
+Open Start and launch **Terminal**, and type in
+
+```cmd
+foundry model list
+```
+
+This will show you all the models that are available to be used on your PC, including ones that haven't been downloaded yet. Notice that depending on your device hardware, CPU, NPU, and GPU models will show up.
+
+Then type in...
+
+```cmd
+foundry cache list
+```
+
+This will show you all the models that are already downloaded on your PC and ready to use.
+
+Let's use the `Phi-3.5-mini-instruct-generic-cpu` model which should already be downloaded on your PC. Enter the following command...
+
+```cmd
+foundry model run Phi-3.5-mini-instruct-generic-cpu
+```
+
+This will launch an interactive chat within the terminal, where you can enter whatever chat questions you have, and the response will be generated 100% locally on your PC. This is a great way to test a few models quickly and see which ones might work well for your tasks.
+
+Go ahead and play around with the model. And if you want to try a different model that's already downloaded, you can press `Ctrl+C` to exit the interactive chat and then use the `foundry model run` command on one of the models that was in `foundry cache list`!
+
+## Step 2: Open the solution
 
 Double click the FoundryLocalLabDemo.sln file in the root directory to open the solution.
 
 <img width="193" height="80" alt="image" src="https://github.com/user-attachments/assets/b8826a18-134f-467c-91d8-789853443803" />
 
-## Step 2: Deploy the app
+## Step 3: Deploy the app
 
 Click the Start Debugging button to deploy the app. We'll keep it open while we edit, and see changes appear live!
 
@@ -22,19 +52,19 @@ The app should look like this when it launches.
 
 Notice that no models appear in the middle section. We're going to add the ability to use local LLMs using Foundry Local!
 
-## Step 3: Inspect the NuGet packages
+## Step 4: Inspect the NuGet packages
 
 Back in Visual Studio, open the *Solution Explorer* and inspect the dependencies of the project. Notice that the Foundry Local NuGet package is installed, along with some Azure AI (cloud) libraries. If you were starting new, you would install the Foundry Local NuGet package yourself. We have it pre-installed since we leverage some of the types in the sample project.
 
 <img width="328" height="321" alt="image" src="https://github.com/user-attachments/assets/b1aae941-094a-4c32-898d-aa919f1b9d42" />
 
-## Step 4: Open the ExecutionLogic.cs file
+## Step 5: Open the ExecutionLogic.cs file
 
 Further down in the *Solution Explorer*, find and open the **ExecutionLogic.cs** file. Notice that we have a static `FoundryLocalManager` initialized, but the rest has not been implemented.
 
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/c49f7833-15ec-4208-b26d-13c87405d337" />
 
-## Step 5: Implement getting the catalog models
+## Step 6: Implement getting the catalog models
 
 First, we have to start the Foundry Local service. Update `StartServiceAsync` to call `await manager.StartServiceAsync()`.
 
@@ -80,7 +110,7 @@ Then, switch back to the app and click the **Refresh Models** button, which will
 
 Notice that each model includes information about the model, like what hardware it can run on (CPU vs NPU vs GPU).
 
-## Step 6: Optionally implement downloading models
+## Step 7: Optionally implement downloading models
 
 For this lab, if you already have models downloaded, this step is optional since models are often 2 GB or larger and will take a while to download. You can add the code to download models, but we wouldn't recommend clicking one of those in the UI, otherwise you might be stuck for a while.
 
@@ -94,7 +124,7 @@ public static IAsyncEnumerable<ModelDownloadProgress> DownloadModelAsync(string 
 }
 ```
 
-## Step 7: Implement loading a model
+## Step 8: Implement loading a model
 
 These local LLMs are large, and benefit from a dedicated method to load the model so that it'll be ready for use.
 
@@ -126,7 +156,7 @@ Switch back to the app and click on the **Phi-3.5-mini-instruct-generic-cpu** mo
 
 Feel free to click around on some of the messages in the left pane. You'll notice you'll get HTTP 401 errors since we haven't implemented the connection to the models yet.
 
-## Step 8: Implement inferencing a model
+## Step 9: Implement inferencing a model
 
 Inferencing a model with Foundry Local is actually identical to inferencing a cloud model. We simply need to point our inferencing code to the local model endpoint that Foundry Local exposes. This enables us to easily swap between local and cloud models without changing our inferencing code!
 
