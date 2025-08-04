@@ -34,6 +34,24 @@ This will launch an interactive chat within the terminal, where you can enter wh
 
 Go ahead and play around with the model. And if you want to try a different model that's already downloaded, you can press `Ctrl+C` to exit the interactive chat and then use the `foundry model run` command on one of the models that was in `foundry cache list`!
 
+You can also see the performance info of the model by adding `--verbose` to the command...
+
+```cmd
+foundry model run Phi-3.5-mini-instruct-generic-cpu --verbose
+```
+
+This will output perf info after the response is complete, like the following info...
+
+```
+======================Perf Info======================
+Total Tokens/Second: 28.783958602846056
+Time to First Token: 593 ms
+Average Token Generation Time: 34.11985018726592 ms
+Total Time: 9276 ms
+Total Tokens: 267
+=====================================================
+```
+
 ## Step 2: Open the solution
 
 Double click the FoundryLocalLabDemo.sln file in the root directory to open the solution.
