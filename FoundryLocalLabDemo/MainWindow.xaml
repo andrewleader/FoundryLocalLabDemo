@@ -43,31 +43,28 @@
                                     <Border
                                         Margin="0,0,0,5"
                                         Padding="12"
-                                        Background="{DynamicResource ControlFillColorDefaultBrush}"
-                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                         BorderThickness="1"
                                         CornerRadius="{StaticResource ControlCornerRadius}"
                                         Cursor="Hand"
                                         MouseLeftButtonDown="MessageItem_Click">
                                         <Border.Style>
                                             <Style TargetType="Border">
+                                                <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
+                                                <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                        <Setter Property="Background" Value="LightBlue" />
-                                                        <Setter Property="BorderBrush" Value="DodgerBlue" />
-                                                        <Setter Property="BorderThickness" Value="2" />
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding IsProcessing}" Value="True">
-                                                        <Setter Property="Background" Value="LightYellow" />
-                                                        <Setter Property="BorderBrush" Value="Orange" />
-                                                    </DataTrigger>
                                                     <DataTrigger Binding="{Binding IsUrgent}" Value="True">
                                                         <Setter Property="BorderBrush" Value="Red" />
-                                                        <Setter Property="BorderThickness" Value="2" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
+                                                        <Setter Property="BorderBrush" Value="{DynamicResource TextControlElevationBorderFocusedBrush}" />
                                                     </DataTrigger>
                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Background" Value="AliceBlue" />
+                                                        <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
                                                     </Trigger>
+                                                    <DataTrigger Binding="{Binding IsProcessing}" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                                                    </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
@@ -136,20 +133,16 @@
                                                 TextWrapping="Wrap" />
 
                                             <!--  Processing Indicator  -->
-                                            <Grid
-                                                Grid.Row="0"
-                                                Grid.RowSpan="4"
-                                                Grid.ColumnSpan="3"
-                                                Margin="-12"
-                                                Visibility="{Binding IsProcessing, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                <Rectangle Fill="{DynamicResource AccentFillColorDefaultBrush}" Opacity="0.5" />
-                                                <TextBlock
+                                            <TextBlock
+                                                    Grid.Row="0"
+Grid.RowSpan="4"
+Grid.ColumnSpan="3"
+Visibility="{Binding IsProcessing, Converter={StaticResource BoolToVisibilityConverter}}"
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center"
                                                     Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                                                     Style="{StaticResource SubtitleTextBlockStyle}"
                                                     Text="Processing..." />
-                                            </Grid>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -197,17 +190,16 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border
-                                        Margin="2"
-                                        Padding="6"
-                                        Background="White"
-                                        BorderBrush="LightGray"
+                                        Padding="4"
                                         BorderThickness="1"
-                                        CornerRadius="4"
+                                        CornerRadius="{StaticResource ControlCornerRadius}"
                                         Cursor="Hand"
                                         MouseLeftButtonDown="ModelItem_Click"
                                         Tag="{Binding Name}">
                                         <Border.Style>
                                             <Style TargetType="Border">
+                                                <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
+                                                <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding IsLoaded}" Value="True">
                                                         <Setter Property="Background" Value="LightGreen" />
