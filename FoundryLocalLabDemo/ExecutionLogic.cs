@@ -1,19 +1,9 @@
-﻿using Azure.AI.OpenAI;
-using Microsoft.AI.Foundry.Local;
+﻿using Microsoft.AI.Foundry.Local;
 using Microsoft.Extensions.AI;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Schema.Generation;
-using Newtonsoft.Json.Schema;
 using OpenAI;
-using OpenAI.Assistants;
-using System;
 using System.ClientModel;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace FoundryLocalLabDemo
 {
