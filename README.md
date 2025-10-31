@@ -1,5 +1,12 @@
 # Foundry Local on Windows Lab Demo
 
+## Prerequisites
+
+- [Visual Studio 2022 or higher](https://visualstudio.microsoft.com/downloads/)
+- .NET Desktop Development Workload
+- [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download) (May be included with your VS version, depending.)
+- Foundry Local: `winget install Microsoft.FoundryLocal`
+
 ## Step 1: Open the solution
 
 Double click the FoundryLocalLabDemo.sln file in the root directory to open the solution.
