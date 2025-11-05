@@ -1,6 +1,7 @@
-﻿namespace FoundryLocalLabDemo;
+﻿
+namespace FoundryLocal.Core;
 
-public class StudentProfile
+public record StudentProfile
 {
     public string? FirstName { get; set; }
     public string? LastName { get; set; }

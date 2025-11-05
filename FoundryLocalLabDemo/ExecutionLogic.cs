@@ -1,4 +1,5 @@
-﻿using Microsoft.AI.Foundry.Local;
+﻿using FoundryLocal.Core;
+using Microsoft.AI.Foundry.Local;
 using Microsoft.Extensions.AI;
 using OpenAI;
 using System.ClientModel;

@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36301.6 d17.14
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11201.2 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoundryLocalLabDemo", "FoundryLocalLabDemo\FoundryLocalLabDemo.csproj", "{5CD6C22C-CC7F-42EC-99BB-06B21165BDDE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoundryLocal.Core", "FoundryLocal.Core\FoundryLocal.Core.csproj", "{3F69BD24-C7CC-4E3D-93D0-387ED770CC69}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{5CD6C22C-CC7F-42EC-99BB-06B21165BDDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5CD6C22C-CC7F-42EC-99BB-06B21165BDDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5CD6C22C-CC7F-42EC-99BB-06B21165BDDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F69BD24-C7CC-4E3D-93D0-387ED770CC69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F69BD24-C7CC-4E3D-93D0-387ED770CC69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F69BD24-C7CC-4E3D-93D0-387ED770CC69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F69BD24-C7CC-4E3D-93D0-387ED770CC69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

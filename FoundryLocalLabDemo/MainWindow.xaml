@@ -2,13 +2,35 @@
     x:Class="FoundryLocalLabDemo.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:core="clr-namespace:FoundryLocal.Core;assembly=FoundryLocal.Core"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:FoundryLocalLabDemo"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
     Title="Financial Aid Support Staff Tool"
     Width="1400"
     Height="800"
     mc:Ignorable="d">
+
+    <Window.Resources>
+        <ObjectDataProvider
+            x:Key="CitizenshipStatusEnumValues"
+            MethodName="GetValues"
+            ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="core:CitizenshipStatus" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
+        <ObjectDataProvider
+            x:Key="HighSchoolStatusEnumValues"
+            MethodName="GetValues"
+            ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="core:HighSchoolStatus" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </Window.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -340,7 +362,7 @@
                                                     <RadioButton.IsChecked>
                                                         <MultiBinding Converter="{x:Static local:ModelSelectionConverter.Instance}">
                                                             <Binding Path="Name" />
-                                                            <Binding Path="DataContext.SelectedModelName" RelativeSource="{RelativeSource AncestorType=Window}" />
+                                                            <Binding Path="DataContext.SelectedModel.Name" RelativeSource="{RelativeSource AncestorType=Window}" />
                                                         </MultiBinding>
                                                     </RadioButton.IsChecked>
                                                 </RadioButton>
@@ -533,56 +555,52 @@
                             <!--  First Name  -->
                             <StackPanel Margin="0,20,0,5" Orientation="Horizontal">
                                 <Label Width="120" Content="First Name:" />
-                                <TextBox x:Name="FirstNameTextBox" Width="200" />
+                                <TextBox Width="200" Text="{Binding Path=CurrentStudentProfile.FirstName}" />
                             </StackPanel>
 
                             <!--  Last Name  -->
                             <StackPanel Margin="0,5" Orientation="Horizontal">
                                 <Label Width="120" Content="Last Name:" />
-                                <TextBox x:Name="LastNameTextBox" Width="200" />
+                                <TextBox Width="200" Text="{Binding Path=CurrentStudentProfile.LastName}" />
                             </StackPanel>
 
                             <!--  Citizenship Status  -->
                             <StackPanel Margin="0,5" Orientation="Horizontal">
                                 <Label Width="120" Content="Citizenship Status:" />
-                                <ComboBox x:Name="CitizenshipStatusComboBox" Width="200">
-                                    <ComboBoxItem Content="U.S. Citizen" />
-                                    <ComboBoxItem Content="Permanent Resident" />
-                                    <ComboBoxItem Content="Non-Resident Alien" />
-                                    <ComboBoxItem Content="Other" />
-                                </ComboBox>
+                                <ComboBox
+                                    Width="200"
+                                    ItemsSource="{Binding Source={StaticResource CitizenshipStatusEnumValues}}"
+                                    SelectedItem="{Binding Path=CurrentStudentProfile.CitizenshipStatus}" />
                             </StackPanel>
 
                             <!--  SSN  -->
                             <StackPanel Margin="0,5" Orientation="Horizontal">
                                 <Label Width="120" Content="SSN:" />
-                                <TextBox x:Name="SSNTextBox" Width="200" />
+                                <TextBox Width="200" Text="{Binding Path=CurrentStudentProfile.SSN}" />
                             </StackPanel>
 
                             <!--  High School Status  -->
                             <StackPanel Margin="0,5" Orientation="Horizontal">
                                 <Label Width="120" Content="High School Status:" />
-                                <ComboBox x:Name="HighSchoolStatusComboBox" Width="200">
-                                    <ComboBoxItem Content="Graduated" />
-                                    <ComboBoxItem Content="Not Graduated" />
-                                    <ComboBoxItem Content="GED" />
-                                    <ComboBoxItem Content="Other" />
-                                </ComboBox>
+                                <ComboBox
+                                    Width="200"
+                                    ItemsSource="{Binding Source={StaticResource HighSchoolStatusEnumValues}}"
+                                    SelectedItem="{Binding Path=CurrentStudentProfile.HighSchoolStatus}" />
                             </StackPanel>
 
                             <!--  Federal Loan Issues  -->
                             <StackPanel Margin="0,5" Orientation="Horizontal">
                                 <Label Width="120" Content="Federal Loan Issues:" />
                                 <CheckBox
-                                    x:Name="HasFederalLoanIssuesCheckBox"
                                     VerticalAlignment="Center"
-                                    Content="Has previous issues" />
+                                    Content="Has previous issues"
+                                    IsChecked="{Binding Path=CurrentStudentProfile.HasFederalLoanIssues}" />
                             </StackPanel>
 
                             <!--  GPA  -->
                             <StackPanel Margin="0,5" Orientation="Horizontal">
                                 <Label Width="120" Content="GPA:" />
-                                <TextBox x:Name="GPATextBox" Width="100" />
+                                <TextBox Width="100" Text="{Binding Path=CurrentStudentProfile.GPA, StringFormat=F1}" />
                             </StackPanel>
                         </StackPanel>
                     </ScrollViewer>

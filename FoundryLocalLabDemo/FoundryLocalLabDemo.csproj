@@ -15,4 +15,8 @@
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.7.1-preview.1.25365.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\FoundryLocal.Core\FoundryLocal.Core.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -1,6 +1,5 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+﻿using FoundryLocal.Core;
+using FoundryLocal.Core.ViewModels;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -11,213 +10,41 @@ namespace FoundryLocalLabDemo;
 /// <summary>
 /// Interaction logic for MainWindow.xaml - Financial Aid Support Staff Tool
 /// </summary>
-public partial class MainWindow : Window, INotifyPropertyChanged
+public partial class MainWindow : Window
 {
-    private ObservableCollection<StudentMessageViewModel> _studentMessages = new();
-    private ObservableCollection<ModelViewModel> _availableModels = new();
-    private ObservableCollection<ModelViewModel> _downloadedModels = new();
-    private ObservableCollection<ModelViewModel> _availableForDownloadModels = new();
+    private MainViewModel ViewModel { get; } = new();
+
     private CancellationTokenSource? _currentCancellationTokenSource;
-    private string? _selectedModelName;
-    private StudentMessageViewModel? _selectedMessage;
-    private StudentProfile _currentStudentProfile = new();
-    private bool _isProcessingProfile;
-
-    public ObservableCollection<StudentMessageViewModel> StudentMessages
-    {
-        get => _studentMessages;
-        set
-        {
-            _studentMessages = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public ObservableCollection<ModelViewModel> AvailableModels
-    {
-        get => _availableModels;
-        set
-        {
-            _availableModels = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public ObservableCollection<ModelViewModel> DownloadedModels
-    {
-        get => _downloadedModels;
-        set
-        {
-            _downloadedModels = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public ObservableCollection<ModelViewModel> AvailableForDownloadModels
-    {
-        get => _availableForDownloadModels;
-        set
-        {
-            _availableForDownloadModels = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public string? SelectedModelName
-    {
-        get => _selectedModelName;
-        set
-        {
-            if (_selectedModelName != value)
-            {
-                _selectedModelName = value;
-                OnPropertyChanged();
-                UpdateSelectedModelText();
-                
-                // Auto-process selected message if model is ready and message is selected
-                if (!string.IsNullOrEmpty(value) && _selectedMessage != null)
-                {
-                    var selectedModel = AvailableModels.FirstOrDefault(m => m.Name == value);
-                    if (selectedModel?.IsLoaded == true)
-                    {
-                        _ = ProcessSelectedMessage();
-                    }
-                }
-            }
-        }
-    }
-
-    public StudentMessageViewModel? SelectedMessage
-    {
-        get => _selectedMessage;
-        set
-        {
-            if (_selectedMessage != value)
-            {
-                // Deselect previous message
-                if (_selectedMessage != null)
-                    _selectedMessage.IsSelected = false;
-                
-                _selectedMessage = value;
-                
-                // Select new message
-                if (_selectedMessage != null)
-                    _selectedMessage.IsSelected = true;
-                
-                OnPropertyChanged();
-                
-                // Auto-process if model is ready
-                if (_selectedMessage != null && !string.IsNullOrEmpty(SelectedModelName))
-                {
-                    var selectedModel = AvailableModels.FirstOrDefault(m => m.Name == SelectedModelName);
-                    if (selectedModel?.IsLoaded == true)
-                    {
-                        _ = ProcessSelectedMessage();
-                    }
-                }
-            }
-        }
-    }
-
-    public StudentProfile CurrentStudentProfile
-    {
-        get => _currentStudentProfile;
-        set
-        {
-            _currentStudentProfile = value;
-            OnPropertyChanged();
-            UpdateFormFromProfile();
-        }
-    }
-
-    public bool IsProcessingProfile
-    {
-        get => _isProcessingProfile;
-        set
-        {
-            if (_isProcessingProfile != value)
-            {
-                _isProcessingProfile = value;
-                OnPropertyChanged();
-            }
-        }
-    }
 
     public MainWindow()
     {
         InitializeComponent();
         InitializeInbox();
-        DataContext = this;
+        DataContext = ViewModel;
         _ = InitializeModelsAsync();
+
+        // TODO: Better handle text/visuals in XAML compared to code-behind manipulation.
+        ViewModel.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(ViewModel.SelectedModel))
+            {
+                UpdateSelectedModelText();
+
+                _ = ProcessSelectedMessage();
+            }
+            else if (e.PropertyName == nameof(ViewModel.SelectedMessage))
+            {
+                _ = ProcessSelectedMessage();
+            }
+        };
     }
 
     private void InitializeInbox()
     {
         // Pre-populate with 6 sample student messages
-        var sampleMessages = new[]
-        {
-            new StudentMessageViewModel
-            {
-                StudentName = "Sarah Johnson",
-                StudentId = "SJ2024001",
-                ReceivedDate = DateTime.Now.AddHours(-2),
-                Subject = "Financial Aid Eligibility Question",
-                MessageText = "Hi! I'm Sarah, a pre-med student with a 3.8 GPA. I'm a U.S. citizen with SSN 123-45-6789 and I graduated from high school. I'm wondering if I qualify for federal financial aid? I have good grades but I'm worried about the requirements.",
-                IsUrgent = false
-            },
-            new StudentMessageViewModel
-            {
-                StudentName = "Mike Rodriguez",
-                StudentId = "MR2024002", 
-                ReceivedDate = DateTime.Now.AddHours(-5),
-                Subject = "Previous Loan Issues - Aid Eligibility",
-                MessageText = "Hello, I'm Mike Rodriguez. I'm an engineering student but I have some issues with my previous federal loans. My GPA is around 2.1. I'm a permanent resident with SSN 234-56-7890 and I have my GED. Can I still get financial aid?",
-                IsUrgent = true
-            },
-            new StudentMessageViewModel
-            {
-                StudentName = "Ashley Chen",
-                StudentId = "AC2024003",
-                ReceivedDate = DateTime.Now.AddHours(-1),
-                Subject = "Low Grades Impact on Aid",
-                MessageText = "Hi there! I'm Ashley, studying business. My grades haven't been great lately - my GPA is 1.2 and I have some courses with really low grades. I'm a U.S. citizen and high school graduate. How does this affect my financial aid eligibility?",
-                IsUrgent = false
-            },
-            new StudentMessageViewModel
-            {
-                StudentName = "David Kim",
-                StudentId = "DK2024004",
-                ReceivedDate = DateTime.Now.AddHours(-8),
-                Subject = "International Student Aid Question",
-                MessageText = "Hello, my name is David Kim. I'm an international student from South Korea studying computer science. My GPA is 3.5 and I completed high school. I don't have an SSN yet. What financial aid options are available for someone in my situation?",
-                IsUrgent = false
-            },
-            new StudentMessageViewModel
-            {
-                StudentName = "Maria Gonzalez",
-                StudentId = "MG2024005",
-                ReceivedDate = DateTime.Now.AddMinutes(-30),
-                Subject = "URGENT: Aid Deadline Approaching",
-                MessageText = "Hi, this is Maria Gonzalez. I'm a U.S. citizen with SSN 456-78-9012, high school graduate, GPA 3.2. I need to know about financial aid ASAP as deadlines are approaching. I have no previous loan issues. Can you help me understand what I qualify for?",
-                IsUrgent = true
-            },
-            new StudentMessageViewModel
-            {
-                StudentName = "James Thompson",
-                StudentId = "JT2024006",
-                ReceivedDate = DateTime.Now.AddDays(-1),
-                Subject = "GED and Financial Aid Eligibility",
-                MessageText = "Hello, I'm James Thompson. I got my GED instead of graduating traditionally. I'm a U.S. citizen with SSN 567-89-0123. My current GPA in college is 2.8. I want to know if having a GED affects my federal financial aid eligibility.",
-                IsUrgent = false
-            }
-        };
+        ViewModel.StudentMessages = new(SampleData.GetSampleStudentProfiles());
 
-        foreach (var message in sampleMessages)
-        {
-            StudentMessages.Add(message);
-        }
-
-        StatusText.Text = $"Loaded {StudentMessages.Count} student messages";
+        StatusText.Text = $"Loaded {ViewModel.StudentMessages.Count} student messages";
     }
 
     private async Task InitializeModelsAsync()
@@ -238,79 +65,68 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private async Task LoadAvailableModelsAsync()
     {
-        try
+        // Clear existing models
+        ViewModel.AvailableModels.Clear();
+        ViewModel.DownloadedModels.Clear();
+        ViewModel.AvailableForDownloadModels.Clear();
+
+        // Load catalog models
+        var catalogModels = await ExecutionLogic.ListCatalogModelsAsync();
+        var cachedModels = await ExecutionLogic.ListCachedModelsAsync();
+        var cachedModelNames = cachedModels.Select(m => m.ModelId).ToHashSet();
+
+        foreach (var model in catalogModels)
         {
-            // Clear existing models
-            AvailableModels.Clear();
-            DownloadedModels.Clear();
-            AvailableForDownloadModels.Clear();
-
-            // Load catalog models
-            var catalogModels = await ExecutionLogic.ListCatalogModelsAsync();
-            var cachedModels = await ExecutionLogic.ListCachedModelsAsync();
-            var cachedModelNames = cachedModels.Select(m => m.ModelId).ToHashSet();
-
-            foreach (var model in catalogModels)
+            var modelViewModel = new ModelViewModel
             {
-                var modelViewModel = new ModelViewModel
-                {
-                    Name = model.ModelId,
-                    DeviceType = model.Runtime.DeviceType.ToString(),
-                    IsDownloaded = cachedModelNames.Contains(model.ModelId),
-                    IsDownloading = false,
-                    IsLoaded = false, // Models need to be loaded into memory after download
-                    IsLoading = false,
-                    DownloadProgress = 0,
-                    DownloadStatus = ""
-                };
+                Name = model.ModelId,
+                DeviceType = model.Runtime.DeviceType.ToString(),
+                IsDownloaded = cachedModelNames.Contains(model.ModelId),
+                IsDownloading = false,
+                IsLoaded = false, // Models need to be loaded into memory after download
+                IsLoading = false,
+                DownloadProgress = 0,
+                DownloadStatus = ""
+            };
+
+            // Add to main collection
+            ViewModel.AvailableModels.Add(modelViewModel);
                 
-                // Add to main collection
-                AvailableModels.Add(modelViewModel);
-                
-                // Add to appropriate separated collection
-                if (modelViewModel.IsDownloaded)
-                {
-                    DownloadedModels.Add(modelViewModel);
-                }
-                else
-                {
-                    AvailableForDownloadModels.Add(modelViewModel);
-                }
+            // Add to appropriate separated collection
+            if (modelViewModel.IsDownloaded)
+            {
+                ViewModel.DownloadedModels.Add(modelViewModel);
             }
-        }
-        catch (Exception ex)
-        {
-            StatusText.Text = $"Error loading models: {ex.Message}";
+            else
+            {
+                ViewModel.AvailableForDownloadModels.Add(modelViewModel);
+            }
         }
     }
 
     private void UpdateSelectedModelText()
     {
-        if (string.IsNullOrEmpty(SelectedModelName))
+        if (ViewModel.SelectedModel == null)
         {
             SelectedModelText.Text = "No model selected";
             SelectedModelText.Foreground = new SolidColorBrush(Colors.Red);
         }
-        else
+        else if (ViewModel.SelectedModel != null)
         {
-            var selectedModel = AvailableModels.FirstOrDefault(m => m.Name == SelectedModelName);
-            if (selectedModel != null)
+            if (ViewModel.SelectedModel.IsLoaded)
             {
-                if (selectedModel.IsLoaded)
-                {
-                    SelectedModelText.Text = $"Selected: {selectedModel.Name} ({selectedModel.DeviceType}) - Ready";
-                    SelectedModelText.Foreground = new SolidColorBrush(Colors.Green);
-                }
-                else if (selectedModel.IsDownloaded)
-                {
-                    SelectedModelText.Text = $"Selected: {selectedModel.Name} ({selectedModel.DeviceType}) - Downloaded";
-                    SelectedModelText.Foreground = new SolidColorBrush(Colors.Blue);
-                }
-                else
-                {
-                    SelectedModelText.Text = $"Selected: {selectedModel.Name} ({selectedModel.DeviceType}) - Not Downloaded";
-                    SelectedModelText.Foreground = new SolidColorBrush(Colors.Orange);
-                }
+                SelectedModelText.Text = $"Selected: {ViewModel.SelectedModel.Name} ({ViewModel.SelectedModel.DeviceType}) - Ready";
+                SelectedModelText.Foreground = new SolidColorBrush(Colors.Green);
+            }
+            else if (ViewModel.SelectedModel.IsDownloaded)
+            {
+                SelectedModelText.Text = $"Selected: {ViewModel.SelectedModel.Name} ({ViewModel.SelectedModel.DeviceType}) - Downloaded";
+                SelectedModelText.Foreground = new SolidColorBrush(Colors.Blue);
+            }
+            else
+            {
+                SelectedModelText.Text = $"Selected: {ViewModel.SelectedModel.Name} ({ViewModel.SelectedModel.DeviceType}) - Not Downloaded";
+                SelectedModelText.Foreground = new SolidColorBrush(Colors.Orange);
             }
         }
     }
@@ -343,12 +159,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             model.IsLoading = true;
 
-            if (SelectedModelName != null)
+            if (ViewModel.SelectedModel != null)
             {
                 try
                 {
                     StatusText.Text = "Unloading previous model from memory...";
-                    await ExecutionLogic.UnloadModelAsync(SelectedModelName);
+                    await ExecutionLogic.UnloadModelAsync(ViewModel.SelectedModel.Name);
                     await Task.Delay(1000);
                 }
                 catch { }
@@ -360,7 +176,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             
             model.IsLoaded = true;
             model.IsLoading = false;
-            SelectedModelName = model.Name;
+            ViewModel.SelectedModel = model;
             StatusText.Text = $"Model loaded and ready: {model.Name}";
         }
         catch (Exception ex)
@@ -374,7 +190,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         if (sender is Border border && border.Tag is string modelName)
         {
-            var model = AvailableModels.FirstOrDefault(m => m.Name == modelName);
+            var model = ViewModel.AvailableModels.FirstOrDefault(m => m.Name == modelName);
             if (model != null)
             {
                 // Step 1: Download the model if not downloaded
@@ -421,7 +237,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 // Model is already loaded - just select it
                 else if (model.IsLoaded)
                 {
-                    SelectedModelName = modelName;
+                    ViewModel.SelectedModel = model;
                     StatusText.Text = $"Selected model: {model.Name} ({model.DeviceType})";
                 }
                 // Model is currently downloading or loading - show status
@@ -443,19 +259,19 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void RefreshModelCollections()
     {
         // Clear the separated collections
-        DownloadedModels.Clear();
-        AvailableForDownloadModels.Clear();
+        ViewModel.DownloadedModels.Clear();
+        ViewModel.AvailableForDownloadModels.Clear();
         
         // Repopulate based on current state
-        foreach (var model in AvailableModels)
+        foreach (var model in ViewModel.AvailableModels)
         {
             if (model.IsDownloaded)
             {
-                DownloadedModels.Add(model);
+                ViewModel.DownloadedModels.Add(model);
             }
             else
             {
-                AvailableForDownloadModels.Add(model);
+                ViewModel.AvailableForDownloadModels.Add(model);
             }
         }
     }
@@ -464,17 +280,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         if (sender is Border border && border.DataContext is StudentMessageViewModel message)
         {
-            SelectedMessage = message;
+            ViewModel.SelectedMessage = message;
         }
     }
 
+    // TODO: Move to ViewModel
     private async Task ProcessSelectedMessage()
     {
-        if (SelectedMessage == null || string.IsNullOrEmpty(SelectedModelName))
-            return;
-
-        var selectedModel = AvailableModels.FirstOrDefault(m => m.Name == SelectedModelName);
-        if (selectedModel?.IsLoaded != true)
+        if (ViewModel.SelectedMessage == null || ViewModel.SelectedModel?.IsLoaded != true)
             return;
 
         // Cancel any existing operation
@@ -487,15 +300,15 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         try
         {
-            SelectedMessage.IsProcessing = true;
-            IsProcessingProfile = true;
-            StatusText.Text = $"Processing message from {SelectedMessage.StudentName}...";
+            ViewModel.SelectedMessage.IsProcessing = true;
+            ViewModel.IsProcessingProfile = true;
+            StatusText.Text = $"Processing message from {ViewModel.SelectedMessage.StudentName}...";
             TextBlockProcessingMessageDetails.Text = "Extracting information from message...\n\n";
 
             // Use AI to parse student information from the message
             var studentProfileUpdates = ExecutionLogic.ParseStudentProfileStreamingAsync(
-                SelectedModelName,
-                SelectedMessage.MessageText,
+                ViewModel.SelectedModel.Name,
+                ViewModel.SelectedMessage.MessageText,
                 cancellationToken);
 
             // Update the current profile and form
@@ -503,7 +316,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             {
                 if (update.StudentProfile != null)
                 {
-                    CurrentStudentProfile = update.StudentProfile;
+                    ViewModel.CurrentStudentProfile = update.StudentProfile;
                 }
                 else
                 {
@@ -511,7 +324,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 }
             }
 
-            StatusText.Text = $"Processed message from {SelectedMessage.StudentName} - Profile extracted";
+            StatusText.Text = $"Processed message from {ViewModel.SelectedMessage.StudentName} - Profile extracted";
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -523,58 +336,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
         finally
         {
-            if (SelectedMessage != null)
-                SelectedMessage.IsProcessing = false;
-            
-            IsProcessingProfile = false;
+            if (ViewModel.SelectedMessage != null)
+                ViewModel.SelectedMessage.IsProcessing = false;
+
+            ViewModel.IsProcessingProfile = false;
             
             _currentCancellationTokenSource?.Dispose();
             _currentCancellationTokenSource = null;
-        }
-    }
-
-    private void UpdateFormFromProfile()
-    {
-        // Update First Name
-        FirstNameTextBox.Text = CurrentStudentProfile.FirstName ?? "";
-        
-        // Update Last Name  
-        LastNameTextBox.Text = CurrentStudentProfile.LastName ?? "";
-        
-        // Update SSN
-        SSNTextBox.Text = CurrentStudentProfile.SSN ?? "";
-        
-        // Update GPA
-        GPATextBox.Text = CurrentStudentProfile.GPA?.ToString("F1") ?? "";
-        
-        // Update Citizenship Status
-        if (CurrentStudentProfile.CitizenshipStatus.HasValue)
-        {
-            CitizenshipStatusComboBox.SelectedIndex = (int)CurrentStudentProfile.CitizenshipStatus.Value;
-        }
-        else
-        {
-            CitizenshipStatusComboBox.SelectedIndex = -1;
-        }
-        
-        // Update High School Status
-        if (CurrentStudentProfile.HighSchoolStatus.HasValue)
-        {
-            HighSchoolStatusComboBox.SelectedIndex = (int)CurrentStudentProfile.HighSchoolStatus.Value;
-        }
-        else
-        {
-            HighSchoolStatusComboBox.SelectedIndex = -1;
-        }
-
-        // Update Federal Loan Issues
-        if (CurrentStudentProfile.HasFederalLoanIssues == null)
-        {
-            HasFederalLoanIssuesCheckBox.IsChecked = false; // Unchecked state
-        }
-        else
-        {
-            HasFederalLoanIssuesCheckBox.IsChecked = CurrentStudentProfile.HasFederalLoanIssues.Value;
         }
     }
 
@@ -585,13 +353,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             _currentCancellationTokenSource.Cancel();
             StatusText.Text = "Cancelling...";
         }
-    }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     // Clean up cancellation token source when window is closed
