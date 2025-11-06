@@ -126,34 +126,36 @@ public static class ExecutionLogic
 
     private static string CreateStudentProfileSchema()
     {
-        return @"{
-  ""type"": ""object"",
-  ""properties"": {
-    ""FirstName"": {
-      ""type"": [""string"", ""null""]
-    },
-    ""LastName"": {
-      ""type"": [""string"", ""null""]
-    },
-    ""CitizenshipStatus"": {
-      ""type"": [""string"", ""null""],
-      ""enum"": [null, ""USCitizen"", ""PermanentResident"", ""NonResidentAlien"", ""Other""]
-    },
-    ""SSN"": {
-      ""type"": [""string"", ""null""]
-    },
-    ""HighSchoolStatus"": {
-      ""type"": [""string"", ""null""],
-      ""enum"": [null, ""Graduated"", ""NotGraduated"", ""GED"", ""Other""]
-    },
-    ""HasFederalLoanIssues"": {
-      ""type"": [""boolean"", ""null""]
-    },
-    ""GPA"": {
-      ""type"": [""number"", ""null""]
-    }
-  }
-}";
+        return """
+            {
+              "type": "object",
+              "properties": {
+                "FirstName": {
+                  "type": ["string", "null"]
+                },
+                "LastName": {
+                  "type": ["string", "null"]
+                },
+                "CitizenshipStatus": {
+                  "type": ["string", "null"],
+                  "enum": [null, "USCitizen", "PermanentResident", "NonResidentAlien", "Other"]
+                },
+                "SSN": {
+                  "type": ["string", "null"]
+                },
+                "HighSchoolStatus": {
+                  "type": ["string", "null"],
+                  "enum": [null, "Graduated", "NotGraduated", "GED", "Other"]
+                },
+                "HasFederalLoanIssues": {
+                  "type": ["boolean", "null"]
+                },
+                "GPA": {
+                  "type": ["number", "null"]
+                }
+              }
+            }
+            """;
     }
 }
 
