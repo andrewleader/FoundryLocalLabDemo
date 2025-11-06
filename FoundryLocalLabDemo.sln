@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 18
-VisualStudioVersion = 18.0.11201.2 d18.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36603.0 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoundryLocalLabDemo", "FoundryLocalLabDemo\FoundryLocalLabDemo.csproj", "{5CD6C22C-CC7F-42EC-99BB-06B21165BDDE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoundryLocal.Core", "FoundryLocal.Core\FoundryLocal.Core.csproj", "{3F69BD24-C7CC-4E3D-93D0-387ED770CC69}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoundryLocal.WinUI", "FoundryLocal.WinUI\FoundryLocal.WinUI.csproj", "{9E23534C-F96D-4315-A8BE-B626F406499B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,12 @@ Global
 		{3F69BD24-C7CC-4E3D-93D0-387ED770CC69}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F69BD24-C7CC-4E3D-93D0-387ED770CC69}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F69BD24-C7CC-4E3D-93D0-387ED770CC69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E23534C-F96D-4315-A8BE-B626F406499B}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{9E23534C-F96D-4315-A8BE-B626F406499B}.Debug|Any CPU.Build.0 = Debug|x64
+		{9E23534C-F96D-4315-A8BE-B626F406499B}.Debug|Any CPU.Deploy.0 = Debug|x64
+		{9E23534C-F96D-4315-A8BE-B626F406499B}.Release|Any CPU.ActiveCfg = Release|x64
+		{9E23534C-F96D-4315-A8BE-B626F406499B}.Release|Any CPU.Build.0 = Release|x64
+		{9E23534C-F96D-4315-A8BE-B626F406499B}.Release|Any CPU.Deploy.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

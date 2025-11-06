@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "FoundryLocal.WinUI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "FoundryLocal.WinUI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
