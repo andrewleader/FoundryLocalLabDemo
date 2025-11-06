@@ -2,30 +2,45 @@
     x:Class="FoundryLocal.WinUI.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:FoundryLocal.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:FoundryLocal.Core"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:vms="using:FoundryLocal.Core.ViewModels"
-    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
+
+    <Page.Resources>
+        <converters:StringFormatConverter x:Key="StringFormatConverter" />
+    </Page.Resources>
+
 
     <Grid Margin="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="2*" />
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-        <!-- Student Message List-->
-        <ListView ItemsSource="{x:Bind ViewModel.StudentMessages, Mode=OneWay}">
+        <!--  Student Message List  -->
+        <ListView
+            Grid.RowSpan="2"
+            ItemsSource="{x:Bind ViewModel.StudentMessages, Mode=OneWay}"
+            SelectedItem="{x:Bind ViewModel.SelectedMessage, Mode=TwoWay}">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="vms:StudentMessageViewModel">
                     <Grid
                         Padding="12,4,8,8"
                         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                         ColumnSpacing="8"
-                        RowSpacing="4"
-                        CornerRadius="{StaticResource ControlCornerRadius}">
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        RowSpacing="4">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -43,10 +58,10 @@
 
                         <TextBlock
                             Grid.Column="1"
+                            Margin="0,-3,0,0"
+                            VerticalAlignment="Center"
                             FontWeight="Bold"
                             Foreground="Red"
-                            VerticalAlignment="Center"
-                            Margin="0,-3,0,0"
                             Text="URGENT"
                             Visibility="{x:Bind IsUrgent, Mode=OneWay}" />
 
@@ -63,8 +78,8 @@
                             Grid.ColumnSpan="3"
                             Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                             Style="{ThemeResource CaptionTextBlockStyle}">
-                            <Run Text="ID: "/>
-                            <Run Text="{x:Bind StudentId}"/>
+                            <Run Text="ID: " />
+                            <Run Text="{x:Bind StudentId}" />
                         </TextBlock>
 
                         <!--  Subject  -->
@@ -86,10 +101,13 @@
                             TextWrapping="Wrap" />
 
                         <!--  Processing Indicator  -->
-                        <Grid Grid.Row="0" Grid.RowSpan="4" Grid.ColumnSpan="3"
-                              Visibility="{x:Bind IsProcessing, Mode=OneWay}">
+                        <Grid
+                            Grid.Row="0"
+                            Grid.RowSpan="4"
+                            Grid.ColumnSpan="3"
+                            Visibility="{x:Bind IsProcessing, Mode=OneWay}">
                             <Rectangle Fill="LightYellow" Opacity="0.7" />
-                            
+
                             <TextBlock
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
@@ -101,17 +119,123 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
             <ListView.ItemContainerStyle>
-                <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
-                    <Setter Property="Margin" Value="0,0,8,8"/>
-                    <Setter Property="Padding" Value="2,0,2,0"/>
+                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                    <Setter Property="Margin" Value="0,0,8,8" />
+                    <Setter Property="Padding" Value="2,0,2,0" />
                 </Style>
             </ListView.ItemContainerStyle>
         </ListView>
-        
-        <!-- Community Toolkit GridSplitter -->
-        <controls:GridSplitter Grid.Column="1" Orientation="Vertical"/>
 
-        <!-- Student Message Details Form -->
-        
+        <!--  Community Toolkit GridSplitter  -->
+        <controls:GridSplitter
+            Grid.RowSpan="2"
+            Grid.Column="1"
+            Orientation="Vertical" />
+
+        <!--  Student Message Details Form  -->
+        <ScrollViewer
+            Grid.Column="2"
+            HorizontalContentAlignment="Left"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel Padding="8,0,0,0" Spacing="8">
+                <!--  Message Preview  -->
+                <controls:HeaderedContentControl Header="Original Message:">
+                    <Border
+                        Margin="8,8,0,0"
+                        Padding="8"
+                        Background="{ThemeResource CardBackgroundFillColorDefault}"
+                        CornerRadius="{ThemeResource ControlCornerRadius}">
+                        <TextBlock
+                            HorizontalAlignment="Left"
+                            Text="{x:Bind ViewModel.SelectedMessage.MessageText, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                    </Border>
+                </controls:HeaderedContentControl>
+
+                <!--  First Name  -->
+                <TextBox
+                    Width="200"
+                    HorizontalAlignment="Left"
+                    Header="First Name:"
+                    Text="{x:Bind ViewModel.CurrentStudentProfile.FirstName, Mode=OneWay}" />
+
+                <!--  Last Name  -->
+                <TextBox
+                    Width="200"
+                    HorizontalAlignment="Left"
+                    Header="Last Name:"
+                    Text="{x:Bind ViewModel.CurrentStudentProfile.LastName, Mode=OneWay}" />
+
+                <!--  Citizenship Status  -->
+
+                <ComboBox
+                    Width="200"
+                    HorizontalAlignment="Left"
+                    Header="Citizenship Status:"
+                    ItemsSource="{ui:EnumValues Type=models:CitizenshipStatus}"
+                    SelectedItem="{x:Bind ViewModel.CurrentStudentProfile.CitizenshipStatus, Mode=OneWay}" />
+
+                <!--  SSN  -->
+                <TextBox
+                    Width="200"
+                    HorizontalAlignment="Left"
+                    Header="SSN:"
+                    Text="{x:Bind ViewModel.CurrentStudentProfile.SSN, Mode=OneWay}" />
+
+                <!--  High School Status  -->
+                <ComboBox
+                    Width="200"
+                    Header="High School Status:"
+                    ItemsSource="{ui:EnumValues Type=models:HighSchoolStatus}"
+                    SelectedItem="{x:Bind ViewModel.CurrentStudentProfile.HighSchoolStatus, Mode=OneWay}" />
+
+                <!--  Federal Loan Issues  -->
+                <controls:HeaderedContentControl Header="Federal Loan Issues:">
+                    <CheckBox
+                        VerticalAlignment="Center"
+                        Content="Has previous issues"
+                        IsChecked="{x:Bind ViewModel.CurrentStudentProfile.HasFederalLoanIssues, Mode=OneWay}" />
+                </controls:HeaderedContentControl>
+
+                <!--  GPA  -->
+                <TextBox
+                    Width="100"
+                    HorizontalAlignment="Left"
+                    Header="GPA:"
+                    Text="{x:Bind ViewModel.CurrentStudentProfile.GPA, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:F1}'}" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <!--  Processing Overlay  -->
+        <Grid Grid.Column="2" Visibility="{x:Bind ViewModel.IsProcessingProfile, Mode=OneWay}">
+            <Rectangle Fill="LightYellow" Opacity="0.8" />
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock
+                    Margin="0,0,0,10"
+                    HorizontalAlignment="Center"
+                    FontSize="16"
+                    FontWeight="Bold"
+                    Foreground="Orange"
+                    Text="Processing Profile..." />
+                <TextBlock
+                    x:Name="TextBlockProcessingMessageDetails"
+                    HorizontalAlignment="Center"
+                    FontSize="12"
+                    Foreground="DarkOrange"
+                    Text="Extracting information from message..."
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </Grid>
+
+        <!--  Status Bar  -->
+        <Border
+            Grid.Row="1"
+            Grid.Column="2"
+            Margin="8,0,4,4"
+            Padding="8"
+            Background="{ThemeResource CardBackgroundFillColorDefault}"
+            CornerRadius="{ThemeResource ControlCornerRadius}">
+            <TextBlock x:Name="StatusText" Text="Ready" />
+        </Border>
     </Grid>
 </Page>
