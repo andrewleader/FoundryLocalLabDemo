@@ -1,9 +1,10 @@
 ﻿using Microsoft.AI.Foundry.Local;
 using Microsoft.Extensions.AI;
-using Newtonsoft.Json;
 using OpenAI;
 using System.ClientModel;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace FoundryLocalLabDemo;
 
@@ -104,10 +105,10 @@ public static class ExecutionLogic
 
         try
         {
-            // Configure JsonConvert to handle string enums during deserialization
-            var settings = new JsonSerializerSettings();
-            settings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
-            parsedProfile = JsonConvert.DeserializeObject<StudentProfile>(respText, settings);
+            // Configure JsonSerializerOptions to handle string enums during deserialization
+            var options = new JsonSerializerOptions();
+            options.Converters.Add(new JsonStringEnumConverter());
+            parsedProfile = JsonSerializer.Deserialize<StudentProfile>(respText, options);
         }
         catch (Exception ex)
         {
