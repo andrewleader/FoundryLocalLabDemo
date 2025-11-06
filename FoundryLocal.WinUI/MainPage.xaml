@@ -6,14 +6,17 @@
     xmlns:local="using:FoundryLocal.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vms="using:FoundryLocal.Core.ViewModels"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
     <Grid Margin="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="2*" />
         </Grid.ColumnDefinitions>
 
+        <!-- Student Message List-->
         <ListView ItemsSource="{x:Bind ViewModel.StudentMessages, Mode=OneWay}">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="vms:StudentMessageViewModel">
@@ -104,5 +107,11 @@
                 </Style>
             </ListView.ItemContainerStyle>
         </ListView>
+        
+        <!-- Community Toolkit GridSplitter -->
+        <controls:GridSplitter Grid.Column="1" Orientation="Vertical"/>
+
+        <!-- Student Message Details Form -->
+        
     </Grid>
 </Page>
