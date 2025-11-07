@@ -80,6 +80,37 @@ public static class ExecutionLogic
             }
         }
 
+        StudentProfile? parsedProfile = null;
+
+        try
+        {
+            // Configure JsonSerializerOptions to handle string enums during deserialization
+            var options = new JsonSerializerOptions();
+            options.Converters.Add(new JsonStringEnumConverter());
+            parsedProfile = JsonSerializer.Deserialize<StudentProfile>(ExtractJson(respText), options);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Failed to parse response:\n\n" + respText);
+        }
+
+        if (parsedProfile != null)
+        {
+            yield return new StudentProfileUpdate
+            {
+                Text = "",
+                StudentProfile = parsedProfile
+            };
+        }
+    }
+
+    /// <summary>
+    /// Helper method to ensure clean ouput of JSON from the response text before trying to deserialize it.
+    /// </summary>
+    /// <param name="respText">Input text from the response.</param>
+    /// <returns>Extracted JSON object.</returns>
+    private static string ExtractJson(string respText)
+    {
         // Handle cleaning up the response to get to the JSON
         respText = respText.Trim();
         if (respText.StartsWith("<think>"))
@@ -101,30 +132,13 @@ public static class ExecutionLogic
             respText = respText.Trim();
         }
 
-        StudentProfile? parsedProfile = null;
-
-        try
-        {
-            // Configure JsonSerializerOptions to handle string enums during deserialization
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new JsonStringEnumConverter());
-            parsedProfile = JsonSerializer.Deserialize<StudentProfile>(respText, options);
-        }
-        catch (Exception ex)
-        {
-            throw new Exception("Failed to parse response:\n\n" + respText);
-        }
-
-        if (parsedProfile != null)
-        {
-            yield return new StudentProfileUpdate
-            {
-                Text = "",
-                StudentProfile = parsedProfile
-            };
-        }
+        return respText;
     }
 
+    /// <summary>
+    /// JSON scheme for the StudentProfile object that we want returned.
+    /// </summary>
+    /// <returns>string containing JSON schema</returns>
     private static string CreateStudentProfileSchema()
     {
         return """
@@ -160,7 +174,10 @@ public static class ExecutionLogic
     }
 }
 
-public class StudentProfileUpdate
+/// <summary>
+/// Intermediary result of the parsing operation.
+/// </summary>
+public record StudentProfileUpdate
 {
     /// <summary>
     /// The text of this update
