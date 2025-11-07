@@ -233,7 +233,7 @@
                         Padding="5"
                         Header="Downloaded Models">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <ItemsControl x:Name="DownloadedModelsItemsControl" ItemsSource="{Binding DownloadedModels}">
+                            <ItemsControl x:Name="DownloadedModelsItemsControl" ItemsSource="{Binding ModelManager.DownloadedModels}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border
@@ -362,7 +362,7 @@
                                                     <RadioButton.IsChecked>
                                                         <MultiBinding Converter="{x:Static local:ModelSelectionConverter.Instance}">
                                                             <Binding Path="Name" />
-                                                            <Binding Path="DataContext.SelectedModel.Name" RelativeSource="{RelativeSource AncestorType=Window}" />
+                                                            <Binding Path="DataContext.ModelManager.SelectedModel.Name" RelativeSource="{RelativeSource AncestorType=Window}" />
                                                         </MultiBinding>
                                                     </RadioButton.IsChecked>
                                                 </RadioButton>
@@ -390,7 +390,7 @@
                         Padding="5"
                         Header="Available for Download">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <ItemsControl x:Name="AvailableForDownloadModelsItemsControl" ItemsSource="{Binding AvailableForDownloadModels}">
+                            <ItemsControl x:Name="AvailableForDownloadModelsItemsControl" ItemsSource="{Binding ModelManager.AvailableForDownloadModels}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border

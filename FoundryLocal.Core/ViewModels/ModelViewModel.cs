@@ -28,6 +28,7 @@ public partial class ModelViewModel : ObservableObject
     [ObservableProperty]
     public partial double DownloadProgress { get; set; }
 
+    // TODO: Make enum, handle text in UI for formatting from DownloadProgress
     [ObservableProperty]
-    public partial string DownloadStatus { get; set; }
+    public partial string DownloadStatusText { get; set; }
 }

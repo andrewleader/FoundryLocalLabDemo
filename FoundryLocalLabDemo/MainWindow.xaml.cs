@@ -1,4 +1,5 @@
 ﻿using FoundryLocal.Core;
+using FoundryLocal.Core.Services;
 using FoundryLocal.Core.ViewModels;
 using System.Windows;
 using System.Windows.Controls;
@@ -26,7 +27,7 @@ public partial class MainWindow : Window
         // TODO: Better handle text/visuals in XAML compared to code-behind manipulation.
         ViewModel.PropertyChanged += (s, e) =>
         {
-            if (e.PropertyName == nameof(ViewModel.SelectedModel))
+            if (e.PropertyName == nameof(ViewModel.ModelManager.SelectedModel))
             {
                 UpdateSelectedModelText();
 
@@ -54,7 +55,7 @@ public partial class MainWindow : Window
             StatusText.Text = "Starting AI service...";
             await ExecutionLogic.StartServiceAsync();
             StatusText.Text = "Loading available models...";
-            await LoadAvailableModelsAsync();
+            await ViewModel.ModelManager.LoadAvailableModelsAsync();
             StatusText.Text = "Ready - Select a message to process";
         }
         catch (Exception ex)
@@ -63,69 +64,28 @@ public partial class MainWindow : Window
         }
     }
 
-    private async Task LoadAvailableModelsAsync()
-    {
-        // Clear existing models
-        ViewModel.AvailableModels.Clear();
-        ViewModel.DownloadedModels.Clear();
-        ViewModel.AvailableForDownloadModels.Clear();
-
-        // Load catalog models
-        var catalogModels = await ExecutionLogic.ListCatalogModelsAsync();
-        var cachedModels = await ExecutionLogic.ListCachedModelsAsync();
-        var cachedModelNames = cachedModels.Select(m => m.ModelId).ToHashSet();
-
-        foreach (var model in catalogModels)
-        {
-            var modelViewModel = new ModelViewModel
-            {
-                Name = model.ModelId,
-                DeviceType = model.Runtime.DeviceType.ToString(),
-                IsDownloaded = cachedModelNames.Contains(model.ModelId),
-                IsDownloading = false,
-                IsLoaded = false, // Models need to be loaded into memory after download
-                IsLoading = false,
-                DownloadProgress = 0,
-                DownloadStatus = ""
-            };
-
-            // Add to main collection
-            ViewModel.AvailableModels.Add(modelViewModel);
-                
-            // Add to appropriate separated collection
-            if (modelViewModel.IsDownloaded)
-            {
-                ViewModel.DownloadedModels.Add(modelViewModel);
-            }
-            else
-            {
-                ViewModel.AvailableForDownloadModels.Add(modelViewModel);
-            }
-        }
-    }
-
     private void UpdateSelectedModelText()
     {
-        if (ViewModel.SelectedModel == null)
+        if (ViewModel.ModelManager.SelectedModel == null)
         {
             SelectedModelText.Text = "No model selected";
             SelectedModelText.Foreground = new SolidColorBrush(Colors.Red);
         }
-        else if (ViewModel.SelectedModel != null)
+        else if (ViewModel.ModelManager.SelectedModel != null)
         {
-            if (ViewModel.SelectedModel.IsLoaded)
+            if (ViewModel.ModelManager.SelectedModel.IsLoaded)
             {
-                SelectedModelText.Text = $"Selected: {ViewModel.SelectedModel.Name} ({ViewModel.SelectedModel.DeviceType}) - Ready";
+                SelectedModelText.Text = $"Selected: {ViewModel.ModelManager.SelectedModel.Name} ({ViewModel.ModelManager.SelectedModel.DeviceType}) - Ready";
                 SelectedModelText.Foreground = new SolidColorBrush(Colors.Green);
             }
-            else if (ViewModel.SelectedModel.IsDownloaded)
+            else if (ViewModel.ModelManager.SelectedModel.IsDownloaded)
             {
-                SelectedModelText.Text = $"Selected: {ViewModel.SelectedModel.Name} ({ViewModel.SelectedModel.DeviceType}) - Downloaded";
+                SelectedModelText.Text = $"Selected: {ViewModel.ModelManager.SelectedModel.Name} ({ViewModel.ModelManager.SelectedModel.DeviceType}) - Downloaded";
                 SelectedModelText.Foreground = new SolidColorBrush(Colors.Blue);
             }
             else
             {
-                SelectedModelText.Text = $"Selected: {ViewModel.SelectedModel.Name} ({ViewModel.SelectedModel.DeviceType}) - Not Downloaded";
+                SelectedModelText.Text = $"Selected: {ViewModel.ModelManager.SelectedModel.Name} ({ViewModel.ModelManager.SelectedModel.DeviceType}) - Not Downloaded";
                 SelectedModelText.Foreground = new SolidColorBrush(Colors.Orange);
             }
         }
@@ -159,12 +119,12 @@ public partial class MainWindow : Window
         {
             model.IsLoading = true;
 
-            if (ViewModel.SelectedModel != null)
+            if (ViewModel.ModelManager.SelectedModel != null)
             {
                 try
                 {
                     StatusText.Text = "Unloading previous model from memory...";
-                    await ExecutionLogic.UnloadModelAsync(ViewModel.SelectedModel.Name);
+                    await ExecutionLogic.UnloadModelAsync(ViewModel.ModelManager.SelectedModel.Name);
                     await Task.Delay(1000);
                 }
                 catch { }
@@ -176,7 +136,7 @@ public partial class MainWindow : Window
             
             model.IsLoaded = true;
             model.IsLoading = false;
-            ViewModel.SelectedModel = model;
+            ViewModel.ModelManager.SelectedModel = model;
             StatusText.Text = $"Model loaded and ready: {model.Name}";
         }
         catch (Exception ex)
@@ -190,7 +150,7 @@ public partial class MainWindow : Window
     {
         if (sender is Border border && border.Tag is string modelName)
         {
-            var model = ViewModel.AvailableModels.FirstOrDefault(m => m.Name == modelName);
+            var model = ViewModel.ModelManager.AvailableModels.FirstOrDefault(m => m.Name == modelName);
             if (model != null)
             {
                 // Step 1: Download the model if not downloaded
@@ -200,31 +160,31 @@ public partial class MainWindow : Window
                     {
                         model.IsDownloading = true;
                         model.DownloadProgress = 0;
-                        model.DownloadStatus = "Starting download...";
+                        model.DownloadStatusText = "Starting download...";
                         StatusText.Text = $"Downloading model: {model.Name}...";
                         
                         await foreach (var progress in ExecutionLogic.DownloadModelAsync(modelName))
                         {
                             var progressValue = progress.Percentage;
                             model.DownloadProgress = progressValue;
-                            model.DownloadStatus = $"Downloading... {progressValue:F1}%";
+                            model.DownloadStatusText = $"Downloading... {progressValue:F1}%";
                             StatusText.Text = $"Downloading {model.Name}: {progressValue:F1}%";
                         }
                         
                         model.IsDownloaded = true;
                         model.IsDownloading = false;
                         model.DownloadProgress = 100;
-                        model.DownloadStatus = "Download complete";
+                        model.DownloadStatusText = "Download complete";
                         StatusText.Text = $"Model downloaded: {model.Name}";
                         
                         // Refresh the separated collections after download
-                        RefreshModelCollections();
+                        ViewModel.ModelManager.RefreshModelCollections();
                     }
                     catch (Exception ex)
                     {
                         model.IsDownloading = false;
                         model.DownloadProgress = 0;
-                        model.DownloadStatus = "Download failed";
+                        model.DownloadStatusText = "Download failed";
                         StatusText.Text = $"Error downloading model: {ex.Message}";
                         return;
                     }
@@ -237,7 +197,7 @@ public partial class MainWindow : Window
                 // Model is already loaded - just select it
                 else if (model.IsLoaded)
                 {
-                    ViewModel.SelectedModel = model;
+                    ViewModel.ModelManager.SelectedModel = model;
                     StatusText.Text = $"Selected model: {model.Name} ({model.DeviceType})";
                 }
                 // Model is currently downloading or loading - show status
@@ -256,26 +216,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private void RefreshModelCollections()
-    {
-        // Clear the separated collections
-        ViewModel.DownloadedModels.Clear();
-        ViewModel.AvailableForDownloadModels.Clear();
-        
-        // Repopulate based on current state
-        foreach (var model in ViewModel.AvailableModels)
-        {
-            if (model.IsDownloaded)
-            {
-                ViewModel.DownloadedModels.Add(model);
-            }
-            else
-            {
-                ViewModel.AvailableForDownloadModels.Add(model);
-            }
-        }
-    }
-
     private void MessageItem_Click(object sender, MouseButtonEventArgs e)
     {
         if (sender is Border border && border.DataContext is StudentMessageViewModel message)
@@ -287,7 +227,7 @@ public partial class MainWindow : Window
     // TODO: Move to ViewModel
     private async Task ProcessSelectedMessage()
     {
-        if (ViewModel.SelectedMessage == null || ViewModel.SelectedModel?.IsLoaded != true)
+        if (ViewModel.SelectedMessage == null || ViewModel.ModelManager.SelectedModel?.IsLoaded != true)
             return;
 
         // Cancel any existing operation
@@ -307,7 +247,7 @@ public partial class MainWindow : Window
 
             // Use AI to parse student information from the message
             var studentProfileUpdates = ExecutionLogic.ParseStudentProfileStreamingAsync(
-                ViewModel.SelectedModel.Name,
+                ViewModel.ModelManager.SelectedModel.Name,
                 ViewModel.SelectedMessage.MessageText,
                 cancellationToken);
 

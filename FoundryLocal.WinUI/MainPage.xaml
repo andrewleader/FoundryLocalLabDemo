@@ -16,20 +16,30 @@
         <converters:StringFormatConverter x:Key="StringFormatConverter" />
     </Page.Resources>
 
-
-    <Grid Margin="8">
+    <Grid Margin="8" RowSpacing="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="2*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <InfoBar
+            Title="Model Loading"
+            Grid.ColumnSpan="3"
+            IsClosable="False"
+            IsOpen="{x:Bind ViewModel.ModelManager.SelectedModel.IsLoading, Mode=OneWay}"
+            Message="{x:Bind ViewModel.ModelManager.SelectedModel.DownloadStatusText, Mode=OneWay}">
+            <ProgressBar Visibility="{x:Bind ViewModel.ModelManager.SelectedModel.IsDownloading, Mode=OneWay}" Value="{x:Bind ViewModel.ModelManager.SelectedModel.DownloadProgress, Mode=OneWay}" />
+        </InfoBar>
+
         <!--  Student Message List  -->
         <ListView
+            Grid.Row="1"
             Grid.RowSpan="2"
             ItemsSource="{x:Bind ViewModel.StudentMessages, Mode=OneWay}"
             SelectedItem="{x:Bind ViewModel.SelectedMessage, Mode=TwoWay}">
@@ -128,12 +138,14 @@
 
         <!--  Community Toolkit GridSplitter  -->
         <controls:GridSplitter
+            Grid.Row="1"
             Grid.RowSpan="2"
             Grid.Column="1"
             Orientation="Vertical" />
 
         <!--  Student Message Details Form  -->
         <ScrollViewer
+            Grid.Row="1"
             Grid.Column="2"
             HorizontalContentAlignment="Left"
             VerticalScrollBarVisibility="Auto">
@@ -229,7 +241,7 @@
 
         <!--  Status Bar  -->
         <Border
-            Grid.Row="1"
+            Grid.Row="2"
             Grid.Column="2"
             Margin="8,0,4,4"
             Padding="8"

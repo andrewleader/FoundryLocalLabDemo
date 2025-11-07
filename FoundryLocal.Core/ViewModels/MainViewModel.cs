@@ -1,27 +1,18 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using FoundryLocal.Core.Services;
+using Microsoft.AI.Foundry.Local;
 using System.Collections.ObjectModel;
 
 namespace FoundryLocal.Core.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    public bool IsModelSelected => SelectedModel != null;
+    // TODO: Could add this as a singleton service via DI
+    public ModelManager ModelManager { get; }
 
     [ObservableProperty]
     public partial ObservableCollection<StudentMessageViewModel> StudentMessages { get; set; } = new();
-
-    [ObservableProperty]
-    public partial ObservableCollection<ModelViewModel> AvailableModels { get; set; } = new();
-
-    [ObservableProperty]
-    public partial ObservableCollection<ModelViewModel> DownloadedModels { get; set; } = new();
-
-    [ObservableProperty]
-    public partial ObservableCollection<ModelViewModel> AvailableForDownloadModels { get; set; } = new();
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsModelSelected))]
-    public partial ModelViewModel? SelectedModel { get; set; }
 
     [ObservableProperty]
     public partial StudentMessageViewModel? SelectedMessage { get; set; }
@@ -45,8 +36,21 @@ public partial class MainViewModel : ObservableObject
     }
 
     [ObservableProperty]
-    public partial StudentProfile CurrentStudentProfile { get; set; }
+    public partial StudentProfile? CurrentStudentProfile { get; set; }
 
     [ObservableProperty]
     public partial bool IsProcessingProfile { get; set; }
+
+    public MainViewModel(SynchronizationContext uiContext)
+    {
+        ModelManager = new(uiContext);
+    }
+
+    [RelayCommand]
+    public async Task InitializeAsync(string modelId)
+    {
+        await ModelManager.StartServiceAsync();
+
+        await ModelManager.LoadModelAsync(modelId);
+    }
 }
