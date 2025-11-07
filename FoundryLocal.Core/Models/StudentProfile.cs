@@ -14,6 +14,44 @@ public record StudentProfile
     /// </summary>
     public bool? HasFederalLoanIssues { get; set; }
     public double? GPA { get; set; }
+
+    /// <summary>
+    /// JSON scheme for the <see cref="StudentProfile"> object that we want returned.
+    /// </summary>
+    /// <returns>string containing JSON schema representation</returns>
+    public static string GetJSONSchema()
+    {
+        return """
+            {
+              "type": "object",
+              "properties": {
+                "FirstName": {
+                  "type": ["string", "null"]
+                },
+                "LastName": {
+                  "type": ["string", "null"]
+                },
+                "CitizenshipStatus": {
+                  "type": ["string", "null"],
+                  "enum": [null, "USCitizen", "PermanentResident", "NonResidentAlien", "Other"]
+                },
+                "SSN": {
+                  "type": ["string", "null"]
+                },
+                "HighSchoolStatus": {
+                  "type": ["string", "null"],
+                  "enum": [null, "Graduated", "NotGraduated", "GED", "Other"]
+                },
+                "HasFederalLoanIssues": {
+                  "type": ["boolean", "null"]
+                },
+                "GPA": {
+                  "type": ["number", "null"]
+                }
+              }
+            }
+            """;
+    }
 }
 
 public enum CitizenshipStatus

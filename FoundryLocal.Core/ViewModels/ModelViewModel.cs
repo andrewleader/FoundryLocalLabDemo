@@ -7,6 +7,7 @@ namespace FoundryLocal.Core.ViewModels;
 /// </summary>
 public partial class ModelViewModel : ObservableObject
 {
+    // TODO: Name/DeviceType could be in a model object.
     [ObservableProperty]
     public partial string Name { get; set; }
 

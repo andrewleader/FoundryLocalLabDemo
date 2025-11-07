@@ -10,6 +10,8 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.AI.Foundry.Local" Version="0.3.0" />
+	<PackageReference Include="Microsoft.Extensions.AI" Version="9.10.2" />
+	<PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.10.2-preview.1.25552.1" />
     <PackageReference Include="OwlCore.Extensions" Version="0.10.0" />
   </ItemGroup>
 

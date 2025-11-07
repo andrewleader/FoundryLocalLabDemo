@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using FoundryLocal.Core.ViewModels;
 using Microsoft.AI.Foundry.Local;
 using OwlCore.Extensions;
-using System;
 using System.Collections.ObjectModel;
 
 namespace FoundryLocal.Core.Services;
@@ -11,7 +10,11 @@ namespace FoundryLocal.Core.Services;
 public partial class ModelManager : ObservableObject
 {
     private FoundryLocalManager _foundryLocalManager = new();
-    private SynchronizationContext uiContext;
+    private SynchronizationContext _uiContext;
+
+    // TODO: Encapsulate these better for the ChatService
+    public string ApiKey => _foundryLocalManager.ApiKey;
+    public Uri Endpoint => _foundryLocalManager.Endpoint;
 
     public bool IsModelSelected => SelectedModel != null;
 
@@ -46,7 +49,7 @@ public partial class ModelManager : ObservableObject
 
     public ModelManager(SynchronizationContext uiContext)
     {
-        this.uiContext = uiContext;
+        this._uiContext = uiContext;
     }
 
     /// <summary>
@@ -79,7 +82,7 @@ public partial class ModelManager : ObservableObject
     {
         if (DownloadedModels.Contains(model))
         {
-            uiContext.Post((state) =>
+            _uiContext.Post((state) =>
             {
                 model.IsDownloaded = true;
                 model.DownloadStatusText = "Loading model...";
@@ -89,7 +92,7 @@ public partial class ModelManager : ObservableObject
 
             await _foundryLocalManager.LoadModelAsync(model.Name);
 
-            uiContext.Post((state) =>
+            _uiContext.Post((state) =>
             {
                 model.IsLoaded = true;
                 model.IsLoading = false;
@@ -100,7 +103,7 @@ public partial class ModelManager : ObservableObject
         {
             try
             {
-                uiContext.Post((state) =>
+                _uiContext.Post((state) =>
                 {
                     model.IsLoading = true;
                     model.IsDownloaded = false;
@@ -112,7 +115,7 @@ public partial class ModelManager : ObservableObject
 
                 await foreach (var progress in _foundryLocalManager.DownloadModelWithProgressAsync(model.Name))
                 {
-                    uiContext.Post((state) =>
+                    _uiContext.Post((state) =>
                     {
                         var progressValue = progress.Percentage;
                         model.DownloadProgress = progressValue;
@@ -121,7 +124,7 @@ public partial class ModelManager : ObservableObject
                 }
 
                 // Ensure our collections are updated
-                await uiContext.PostAsync(async () =>
+                await _uiContext.PostAsync(async () =>
                 {
                     model.IsDownloaded = true;
                     model.IsDownloading = false;
@@ -137,7 +140,7 @@ public partial class ModelManager : ObservableObject
             }
             catch (Exception e)
             {
-                uiContext.Post((state) =>
+                _uiContext.Post((state) =>
                 {
                     model.IsDownloaded = false;
                     model.IsDownloading = false;

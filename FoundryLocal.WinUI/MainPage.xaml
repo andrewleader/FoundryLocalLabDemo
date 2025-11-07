@@ -42,7 +42,8 @@
             Grid.Row="1"
             Grid.RowSpan="2"
             ItemsSource="{x:Bind ViewModel.StudentMessages, Mode=OneWay}"
-            SelectedItem="{x:Bind ViewModel.SelectedMessage, Mode=TwoWay}">
+            SelectedItem="{x:Bind ViewModel.SelectedMessage, Mode=TwoWay}"
+            IsEnabled="{x:Bind ViewModel.ModelManager.SelectedModel.IsLoaded, Mode=OneWay, FallbackValue=False}">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="vms:StudentMessageViewModel">
                     <Grid
@@ -219,7 +220,7 @@
         </ScrollViewer>
 
         <!--  Processing Overlay  -->
-        <Grid Grid.Column="2" Visibility="{x:Bind ViewModel.IsProcessingProfile, Mode=OneWay}">
+        <Grid Grid.Column="2" Grid.Row="1" Visibility="{x:Bind ViewModel.IsProcessingProfile, Mode=OneWay}">
             <Rectangle Fill="LightYellow" Opacity="0.8" />
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock
@@ -230,11 +231,10 @@
                     Foreground="Orange"
                     Text="Processing Profile..." />
                 <TextBlock
-                    x:Name="TextBlockProcessingMessageDetails"
                     HorizontalAlignment="Center"
                     FontSize="12"
                     Foreground="DarkOrange"
-                    Text="Extracting information from message..."
+                    Text="{x:Bind ViewModel.ProcessingStatusText, Mode=OneWay}"
                     TextWrapping="Wrap" />
             </StackPanel>
         </Grid>
