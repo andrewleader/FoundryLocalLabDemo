@@ -15,7 +15,7 @@ public sealed partial class MainPage : Page
     /// <summary>
     /// Model to use for this example, run <c>foundry model list</c> to see available models.
     /// </summary>
-    ////private static string modelId = "phi-3.5-mini-128k-instruct-qnn-npu:2";
+    ////private static string modelId = "phi-3.5-mini-instruct-qnn-npu:1";
     private static string modelId = "Phi-3.5-mini-instruct-generic-cpu:1";
 
     public MainViewModel ViewModel { get; } = new(SynchronizationContext.Current!);
