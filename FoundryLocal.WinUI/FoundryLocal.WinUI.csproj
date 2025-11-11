@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.WinUI.Controls.HeaderedControls" Version="8.2.250402" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.2.250402" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.2.250402" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" Version="8.2.250402" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6901" />

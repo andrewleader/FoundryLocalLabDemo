@@ -14,6 +14,10 @@
 
     <Page.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter" />
+        <converters:SwitchConverter x:Key="CardBackgroundConverter" TargetType="x:Boolean">
+            <controls:Case Content="{ThemeResource CardBackgroundFillColorDefaultBrush}" Value="False" />
+            <controls:Case Content="{ThemeResource AccentFillColorDefaultBrush}" Value="True" />
+        </converters:SwitchConverter>
     </Page.Resources>
 
     <Grid Margin="8" RowSpacing="8">
@@ -41,14 +45,14 @@
         <ListView
             Grid.Row="1"
             Grid.RowSpan="2"
+            IsEnabled="{x:Bind ViewModel.ModelManager.SelectedModel.IsLoaded, Mode=OneWay, FallbackValue=False}"
             ItemsSource="{x:Bind ViewModel.StudentMessages, Mode=OneWay}"
-            SelectedItem="{x:Bind ViewModel.SelectedMessage, Mode=TwoWay}"
-            IsEnabled="{x:Bind ViewModel.ModelManager.SelectedModel.IsLoaded, Mode=OneWay, FallbackValue=False}">
+            SelectedItem="{x:Bind ViewModel.SelectedMessage, Mode=TwoWay}">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="vms:StudentMessageViewModel">
                     <Grid
                         Padding="12,4,8,8"
-                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        Background="{x:Bind IsProcessing, Converter={StaticResource CardBackgroundConverter}, Mode=OneWay}"
                         ColumnSpacing="8"
                         CornerRadius="{StaticResource ControlCornerRadius}"
                         RowSpacing="4">
@@ -112,20 +116,16 @@
                             TextWrapping="Wrap" />
 
                         <!--  Processing Indicator  -->
-                        <Grid
+                        <TextBlock
                             Grid.Row="0"
                             Grid.RowSpan="4"
                             Grid.ColumnSpan="3"
-                            Visibility="{x:Bind IsProcessing, Mode=OneWay}">
-                            <Rectangle Fill="LightYellow" Opacity="0.7" />
-
-                            <TextBlock
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                FontWeight="Bold"
-                                Foreground="Orange"
-                                Text="Processing..." />
-                        </Grid>
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                            Style="{StaticResource SubtitleTextBlockStyle}"
+                            Text="Processing..."
+                            Visibility="{x:Bind IsProcessing, Mode=OneWay}" />
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
@@ -220,23 +220,33 @@
         </ScrollViewer>
 
         <!--  Processing Overlay  -->
-        <Grid Grid.Column="2" Grid.Row="1" Visibility="{x:Bind ViewModel.IsProcessingProfile, Mode=OneWay}">
-            <Rectangle Fill="LightYellow" Opacity="0.8" />
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock
-                    Margin="0,0,0,10"
-                    HorizontalAlignment="Center"
-                    FontSize="16"
-                    FontWeight="Bold"
-                    Foreground="Orange"
-                    Text="Processing Profile..." />
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    FontSize="12"
-                    Foreground="DarkOrange"
-                    Text="{x:Bind ViewModel.ProcessingStatusText, Mode=OneWay}"
-                    TextWrapping="Wrap" />
-            </StackPanel>
+        <Grid
+            Grid.Row="1"
+            Grid.Column="2"
+            Padding="32"
+            Background="{ThemeResource AccentFillColorDefaultBrush}"
+            ColumnSpacing="32"
+            CornerRadius="{StaticResource ControlCornerRadius}"
+            Opacity="0.7"
+            Visibility="{x:Bind ViewModel.IsProcessingProfile, Mode=OneWay}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                Style="{StaticResource SubtitleTextBlockStyle}"
+                Text="Processing Profile..." />
+            <TextBlock
+                Grid.Row="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                Style="{StaticResource SubtitleTextBlockStyle}"
+                Text="{x:Bind ViewModel.ProcessingStatusText, Mode=OneWay}"
+                TextWrapping="Wrap" />
         </Grid>
 
         <!--  Status Bar  -->
