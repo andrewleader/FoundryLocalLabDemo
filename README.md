@@ -208,3 +208,8 @@ Save your changes (`Ctrl+S`) and press the **Hot Reload** button (or `Alt+F10`).
 Switch back to the app and click on some of the messages in the left panel. Watch the response come in, and watch it populate the fields!
 
 <img width="1378" height="444" alt="image" src="https://github.com/user-attachments/assets/95bfa1a2-a669-4025-ab94-07501ca7f9df" />
+
+## Foundry Local resources
+
+* Documentation: https://learn.microsoft.com/azure/ai-foundry/foundry-local/
+* Feedback: https://github.com/microsoft/Foundry-Local/issues
